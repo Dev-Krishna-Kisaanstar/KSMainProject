@@ -1,0 +1,381 @@
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import {
+    Typography,
+    CircularProgress,
+    Grid,
+    Card,
+    CardContent,
+    Avatar,
+    Button,
+    Box,
+    Slide,
+    Fade,
+    useMediaQuery,
+} from '@mui/material';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import { styled, useTheme } from '@mui/material/styles';
+import Sidebar from '../../../Sidebars/Vendor/VendorMember/VendorMemberSidebar';
+import PersonIcon from '@mui/icons-material/Person';
+import StoreIcon from '@mui/icons-material/Store';
+import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
+import DescriptionIcon from '@mui/icons-material/Description';
+
+// Styled Components
+const ContainerStyled = styled(Box)(({ theme }) => ({
+    marginTop: theme.spacing(4),
+    background: 'rgba(30, 30, 47, 0.6)', // Glass background color
+    backdropFilter: 'blur(10px)', // Apply blur for glass effect
+    borderRadius: '16px', // Rounded corners
+    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', // Subtle shadow
+    width: '100%', // Full width
+    padding: theme.spacing(4),
+    transition: 'all 0.3s ease', // Smooth transition
+    color: '#fff', // Light text for contrast
+}));
+
+const AvatarStyled = styled(Avatar)(({ theme }) => ({
+    width: 100, // Adjusted size
+    height: 100,
+    margin: 'auto',
+    border: '4px solid rgba(255, 255, 255, 0.3)', // Light border
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',
+    transition: 'all 0.3s ease',
+    '&:hover': {
+        transform: 'scale(1.05)',
+    },
+}));
+
+const SectionTitleStyled = styled(Typography)(({ theme }) => ({
+    color: theme.palette.secondary.main, // Use secondary color for contrast
+    marginBottom: theme.spacing(2),
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: '1px',
+}));
+
+const CardStyled = styled(Card)(({ theme }) => ({
+    background: 'rgba(255, 255, 255, 0.1)', // Semi-transparent card background
+    backdropFilter: 'blur(8px)',
+    borderRadius: '12px',
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+    transition: 'all 0.3s ease',
+    color: '#fff', // Light text
+    '&:hover': {
+        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
+        transform: 'translateY(-2px)',
+    },
+}));
+
+const ButtonStyled = styled(Button)(({ theme }) => ({
+    width: '100%',
+    borderRadius: '24px',
+    color: '#fff',
+    marginBottom: theme.spacing(1),
+    fontWeight: '500',
+    textTransform: 'none',
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+    transition: 'all 0.3s ease',
+    '&:hover': {
+        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
+        transform: 'translateY(-1px)',
+    },
+}));
+
+const DetailTypography = styled(Typography)(({ theme }) => ({
+    marginBottom: theme.spacing(1),
+    color: 'rgba(255, 255, 255, 0.8)', // Light text
+    fontWeight: '400',
+}));
+
+const ImageStyled = styled('img')({
+    maxWidth: '100%',   // Ensure image doesn't exceed container width
+    height: 'auto',      // Maintain aspect ratio
+    borderRadius: '8px', // Optional: add rounded corners
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)', // Optional: subtle shadow
+});
+
+const pageStyle = {
+    display: 'flex',
+    flexDirection: 'row',
+    minHeight: '100vh',
+    background: 'linear-gradient(to bottom, #1E1E2F, #33334D)', // Dark gradient background
+    color: '#fff',
+    paddingTop: '20px',
+    flex: 1,
+};
+
+const useGetVendorMember = () => {
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+    const [vendorMember, setVendorMember] = useState(null);
+    const navigate = useNavigate();
+
+    const fetchDashboard = async () => {
+        try {
+            const response = await axios.get(
+                `${process.env.REACT_APP_API_URL}/api/vendor-member/dashboard`,
+                {
+                    withCredentials: true,
+                }
+            );
+            setVendorMember(response.data.vendorMember);
+        } catch (error) {
+            console.error("Error fetching dashboard:", error);
+            if (error.response?.status === 401) {
+                setError('Session expired. Please log in again.');
+                navigate('/VendorMemberLogin');
+            } else if (error.response?.status === 404) {
+                setError('Vendor Member not found.');
+            } else {
+                setError('Failed to load dashboard. Please try again later.');
+            }
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchDashboard();
+    }, []);
+
+    return { loading, error, vendorMember };
+};
+
+const renderKYCDocument = (title, imageSrc, altText) => {
+  return imageSrc ? (
+      <Grid container spacing={2} alignItems="center" style={{ marginBottom: '16px' }}>
+          <Grid item xs={6}>
+              <Typography><strong>{title}:</strong></Typography>
+          </Grid>
+          <Grid item xs={6}>
+              <ImageStyled src={imageSrc} alt={altText} />
+          </Grid>
+      </Grid>
+  ) : null; // Don't render if imageSrc is null/undefined
+};
+
+const VendorMemberDashboard = () => {
+    const { loading, error, vendorMember } = useGetVendorMember();
+    const [activeSection, setActiveSection] = useState('');
+    const theme = useTheme();
+
+    if (loading) {
+        return (
+            <ContainerStyled>
+                <Box display="flex" justifyContent="center" alignItems="center" height="300px">
+                    <CircularProgress />
+                </Box>
+            </ContainerStyled>
+        );
+    }
+
+    if (error) {
+        return (
+            <ContainerStyled>
+                <Typography color="error" variant="h6" align="center">
+                    {error}
+                </Typography>
+            </ContainerStyled>
+        );
+    }
+
+    const handleSectionToggle = (section) => {
+        setActiveSection(activeSection === section ? '' : section);
+    };
+
+    return (
+        <div style={pageStyle}>
+            <Sidebar />
+            <ContainerStyled>
+                <Fade in={true} timeout={500}>
+                    <Grid container spacing={4} justifyContent="center">
+                        {/* Profile Section (Bento Grid Item 1) */}
+                        <Grid item xs={12} md={4}>
+                            <Slide direction="down" in={true} timeout={500}>
+                                <CardStyled>
+                                    <CardContent>
+                                        <AvatarStyled
+                                            src={vendorMember?.profilephoto || ''}
+                                            alt="Profile Photo"
+                                        >
+                                            <AccountCircleIcon fontSize="large" />
+                                        </AvatarStyled>
+                                        <Typography variant="h5" gutterBottom style={{ marginTop: '15px', fontWeight: '500', color: '#fff' }}>
+                                            {vendorMember?.fullName || 'N/A'}
+                                        </Typography>
+                                        <Typography variant="body2" color="textSecondary">
+                                            {vendorMember?.fullAddress || 'N/A'}
+                                        </Typography>
+                                    </CardContent>
+                                </CardStyled>
+                            </Slide>
+                        </Grid>
+
+                        {/* Quick Actions (Bento Grid Item 2 - Top Row) */}
+                        <Grid item xs={12} xl={12} md={12}>
+                            <Slide direction="up" in={true} timeout={500}>
+                                <Grid container spacing={3} justifyContent="center">
+                                    <Grid item xs={12} sm={6} md={6}>
+                                        <ButtonStyled
+                                            variant="contained"
+                                            onClick={() => handleSectionToggle('personalDetails')}
+                                            style={{ backgroundColor: theme.palette.primary.main }}
+                                            startIcon={<PersonIcon />}
+                                        >
+                                            Personal Details
+                                        </ButtonStyled>
+                                    </Grid>
+                                    <Grid item xs={12} sm={6} md={6}>
+                                        <ButtonStyled
+                                            variant="contained"
+                                            onClick={() => handleSectionToggle('shopDetails')}
+                                            style={{ backgroundColor: theme.palette.success.main }}
+                                            startIcon={<StoreIcon />}
+                                        >
+                                            Shop Details
+                                        </ButtonStyled>
+                                    </Grid>
+                                    <Grid item xs={12} sm={6} md={6}>
+                                        <ButtonStyled
+                                            variant="contained"
+                                            onClick={() => handleSectionToggle('bankDetails')}
+                                            style={{ backgroundColor: theme.palette.warning.main }}
+                                            startIcon={<MonetizationOnIcon />}
+                                        >
+                                            Bank Details
+                                        </ButtonStyled>
+                                    </Grid>
+                                    <Grid item xs={12} sm={6} md={6}>
+                                        <ButtonStyled
+                                            variant="contained"
+                                            onClick={() => handleSectionToggle('kycDetails')}
+                                            style={{ backgroundColor: theme.palette.error.main }}
+                                            startIcon={<DescriptionIcon />}
+                                        >
+                                            KYC Documents
+                                        </ButtonStyled>
+                                    </Grid>
+                                </Grid>
+                            </Slide>
+                        </Grid>
+
+                        {/* Detailed Sections (Bento Grid Item 3 - Bottom Row) */}
+                        <Grid item xs={12} xl={12} md={12}>
+                            <Grid container spacing={4}>
+                                <Slide direction="left" in={activeSection === 'personalDetails'} mountOnEnter unmountOnExit>
+                                    <Grid item xs={12} md={6}>
+                                        <CardStyled>
+                                            <CardContent>
+                                                <SectionTitleStyled variant="h6">Personal Details</SectionTitleStyled>
+                                                <DetailTypography><strong>Full Name:</strong> {vendorMember?.fullName || 'N/A'}</DetailTypography>
+                                                <DetailTypography><strong>Mobile Number:</strong> {vendorMember?.mobileNumber || 'N/A'}</DetailTypography>
+                                                <DetailTypography><strong>Alternate Mobile Number:</strong> {vendorMember?.alternateMobileNumber || 'N/A'}</DetailTypography>
+                                                <DetailTypography><strong>Email ID:</strong> {vendorMember?.emailId || 'N/A'}</DetailTypography>
+                                                <DetailTypography><strong>Full Address:</strong> {vendorMember?.fullAddress || 'N/A'}</DetailTypography>
+                                            </CardContent>
+                                        </CardStyled>
+                                    </Grid>
+                                </Slide>
+
+                                <Slide direction="right" in={activeSection === 'shopDetails'} mountOnEnter unmountOnExit>
+                                    <Grid item xs={12} xl={12} md={12}>
+                                        <CardStyled>
+                                            <CardContent>
+                                                <SectionTitleStyled variant="h6">Shop Details</SectionTitleStyled>
+                                                <DetailTypography><strong>Shop Name:</strong> {vendorMember?.shopName || 'N/A'}</DetailTypography>
+                                                <DetailTypography><strong>Shop Website:</strong> {vendorMember?.shopWebsite || 'N/A'}</DetailTypography>
+                                                <DetailTypography><strong>GST No:</strong> {vendorMember?.gstNo || 'N/A'}</DetailTypography>
+                                                <DetailTypography><strong>Shop Address:</strong> {vendorMember?.shopAddress || 'N/A'}</DetailTypography>
+                                                {vendorMember?.shopLogo && (
+                                                    <Grid container spacing={2}>
+                                                        <Grid item xs={6}>
+                                                            <Typography><strong>Shop Logo:</strong></Typography>
+                                                        </Grid>
+                                                        <Grid item xs={6}>
+                                                            <ImageStyled
+                                                                src={vendorMember.shopLogo}
+                                                                alt="Shop Logo"
+                                                            />
+                                                        </Grid>
+                                                    </Grid>
+                                                )}
+                                                {vendorMember?.shopAddressProof && (
+                                                    <Grid container spacing={2}>
+                                                        <Grid item xs={6}>
+                                                            <Typography><strong>Shop Address Proof:</strong></Typography>
+                                                        </Grid>
+                                                        <Grid item xs={6}>
+                                                            <ImageStyled
+                                                                src={vendorMember.shopAddressProof}
+                                                                alt="Shop Address Proof"
+                                                            />
+                                                        </Grid>
+                                                    </Grid>
+                                                )}
+                                                {vendorMember?.shopRegistrationProof && (
+                                                    <Grid container spacing={2}>
+                                                        <Grid item xs={6}>
+                                                            <Typography><strong>Shop Registration Proof:</strong></Typography>
+                                                        </Grid>
+                                                        <Grid item xs={6}>
+                                                            <ImageStyled
+                                                                src={vendorMember.shopRegistrationProof}
+                                                                alt="Shop Registration Proof"
+                                                            />
+                                                        </Grid>
+                                                    </Grid>
+                                                )}
+                                            </CardContent>
+                                        </CardStyled>
+                                    </Grid>
+                                </Slide>
+
+                                <Slide direction="left" in={activeSection === 'bankDetails'} mountOnEnter unmountOnExit>
+                                    <Grid item xs={12} md={6}>
+                                        <CardStyled>
+                                            <CardContent>
+                                                <SectionTitleStyled variant="h6">Bank Details</SectionTitleStyled>
+                                                <DetailTypography><strong>Bank Name:</strong> {vendorMember?.bankName || 'N/A'}</DetailTypography>
+                                                <DetailTypography><strong>Account Name:</strong> {vendorMember?.bankAccountName || 'N/A'}</DetailTypography>
+                                                <DetailTypography><strong>Account Number:</strong> {vendorMember?.bankAccountNumber || 'N/A'}</DetailTypography>
+                                                <DetailTypography><strong>Bank Code:</strong> {vendorMember?.bankCode || 'N/A'}</DetailTypography>
+                                            </CardContent>
+                                        </CardStyled>
+                                    </Grid>
+                                </Slide>
+
+                                <Slide direction="right" in={activeSection === 'kycDetails'} mountOnEnter unmountOnExit>
+    <Grid item xs={12} xl={12} md={12}>
+        <CardStyled>
+            <CardContent>
+                <SectionTitleStyled variant="h6">KYC Documents</SectionTitleStyled>
+
+                {/* Render each KYC Document using the helper function */}
+                {renderKYCDocument("PAN Card", vendorMember?.panCard, "PAN Card")}
+                {renderKYCDocument("Address Proof", vendorMember?.addressProof, "Address Proof")}
+                {renderKYCDocument("GST Certificate", vendorMember?.gstCertificate, "GST Certificate")}
+                {renderKYCDocument("Agricultural PAN Image", vendorMember?.panImage, "Agricultural PAN Image")}
+                {renderKYCDocument("Shop Act License", vendorMember?.shopActLicense, "Shop Act License")}
+                {renderKYCDocument("Gram Panchayat NOC", vendorMember?.gramPanchayatNoc, "Gram Panchayat NOC")}
+
+                <Typography><strong>CIN No:</strong> {vendorMember?.cinNo || 'N/A'}</Typography>
+                <Typography><strong>Seed License No:</strong> {vendorMember?.seedLicenseNo || 'N/A'}</Typography>
+                <Typography><strong>Pesticides License No:</strong> {vendorMember?.pesticidesLicenseNo || 'N/A'}</Typography>
+                <Typography><strong>Fertilizer License No:</strong> {vendorMember?.fertilizerLicenseNo || 'N/A'}</Typography>
+                <Typography><strong>Other License No:</strong> {vendorMember?.otherLicenseNo || 'N/A'}</Typography>
+            </CardContent>
+        </CardStyled>
+    </Grid>
+</Slide>
+                            </Grid>
+                        </Grid>
+                    </Grid>
+                </Fade>
+            </ContainerStyled>
+        </div>
+    );
+};
+
+export default VendorMemberDashboard;

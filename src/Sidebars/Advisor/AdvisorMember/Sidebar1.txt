@@ -1,0 +1,160 @@
+import React, { useState } from 'react';
+import { extendTheme, styled } from '@mui/material/styles';
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import SearchIcon from '@mui/icons-material/Search';
+import ListIcon from '@mui/icons-material/List';
+import { AppProvider } from '@toolpad/core/AppProvider';
+import { DashboardLayout } from '@toolpad/core/DashboardLayout';
+import { PageContainer } from '@toolpad/core/PageContainer';
+import Grid from '@mui/material/Grid2';
+import Skeleton from '@mui/material/Skeleton';
+
+// Define menu items
+const menuItems = [
+  { text: 'Dashboard', icon: <DashboardIcon />, link: '/advisory-member-dashboard' },
+  { text: 'Search', icon: <SearchIcon />, link: '/AdvisorMemberSearchcx' },
+  { text: 'Products', icon: <ListIcon />, link: '/products' },
+];
+
+const demoTheme = extendTheme({
+  colorSchemes: { light: true, dark: true },
+  colorSchemeSelector: 'class',
+  breakpoints: {
+    values: {
+      xs: 0,
+      sm: 600,
+      md: 600,
+      lg: 1200,
+      xl: 1536,
+    },
+  },
+});
+
+function useDemoRouter(initialPath) {
+  const [pathname, setPathname] = React.useState(initialPath);
+
+  const router = React.useMemo(() => {
+    return {
+      pathname,
+      searchParams: new URLSearchParams(),
+      navigate: (path) => setPathname(String(path)),
+    };
+  }, [pathname]);
+
+  return router;
+}
+
+// SidebarContainer with width based on number of menu items
+const SidebarContainer = styled('div')({
+  position: 'fixed',
+  top: 0,
+  left: 0,
+  height: '100vh',
+  transition: 'width 0.3s ease',
+  width: 'auto', // Auto-width based on content
+  paddingTop: '10px', // Add top padding to position the menu items properly
+  backgroundColor: '#fff',
+  overflowX: 'hidden',
+  display: 'flex',
+  flexDirection: 'column',
+  minWidth: '70px', // Minimum width for smaller screens
+  '&:hover': {
+    width: 'auto', // Expand automatically to fit content
+  },
+});
+
+// Adjust SidebarItem layout to be more compact
+const SidebarItem = styled('div')({
+  display: 'flex',
+  alignItems: 'center',
+  padding: '10px 5px', // Reduced padding to save space
+  '& svg': {
+    marginRight: '8px', // Adjust space between icon and text
+  },
+  '&:hover': {
+    backgroundColor: '#f5f5f5', // Hover effect
+  },
+});
+
+const Sidebar = (props) => {
+  const { window } = props;
+  const router = useDemoRouter('/advisory-member-dashboard');
+
+  const demoWindow = window ? window() : undefined;
+
+  return (
+    <SidebarContainer>
+      <AppProvider
+        navigation={[{ kind: 'header', title: 'Menu' }, ...menuItems.map((item) => ({
+          segment: item.link,
+          title: item.text,
+          icon: item.icon,
+        }))]}
+        router={router}
+        theme={demoTheme}
+        window={demoWindow}
+      >
+        <DashboardLayout
+          sx={{
+            margin: 0,
+            padding: 0,
+            height: '100vh',
+            display: 'flex',
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100%',
+            backgroundColor: 'transparent',
+          }}
+        >
+          <PageContainer
+            sx={{
+              flex: 1,
+              overflowY: 'auto',
+              margin: 0,
+              padding: 0,
+              height: '100%',
+              backgroundColor: 'transparent',
+            }}
+          >
+            <Grid container spacing={1} sx={{ margin: 0, width: '100%' }}>
+              <Grid xs={5} />
+              <Grid xs={12}>
+                <Skeleton height={14} />
+              </Grid>
+              <Grid xs={12}>
+                <Skeleton height={14} />
+              </Grid>
+              <Grid xs={4}>
+                <Skeleton height={100} />
+              </Grid>
+              <Grid xs={8}>
+                <Skeleton height={100} />
+              </Grid>
+              <Grid xs={12}>
+                <Skeleton height={150} />
+              </Grid>
+              <Grid xs={12}>
+                <Skeleton height={14} />
+              </Grid>
+              <Grid xs={3}>
+                <Skeleton height={100} />
+              </Grid>
+              <Grid xs={3}>
+                <Skeleton height={100} />
+              </Grid>
+              <Grid xs={3}>
+                <Skeleton height={100} />
+              </Grid>
+              <Grid xs={3}>
+                <Skeleton height={100} />
+              </Grid>
+            </Grid>
+          </PageContainer>
+        </DashboardLayout>
+      </AppProvider>
+    </SidebarContainer>
+  );
+};
+
+export default Sidebar;

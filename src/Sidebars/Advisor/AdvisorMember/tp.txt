@@ -1,0 +1,193 @@
+import React from 'react';
+import { styled, useTheme } from '@mui/material/styles';
+import {
+  Box,
+  CssBaseline,
+  Divider,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  Tooltip,
+  Typography
+} from '@mui/material';
+import MuiDrawer from '@mui/material/Drawer';
+import HomeIcon from '@mui/icons-material/Home';
+import SearchIcon from '@mui/icons-material/Search';
+import ListIcon from '@mui/icons-material/List';
+import AdvisorMemberNavbar from './AdvisorMemberNavbar';
+import icon from '../../../Assets/Logo/icon.png';
+import { Link } from 'react-router-dom';
+
+const drawerWidth = 240;
+
+const openedMixin = (theme) => ({
+  width: drawerWidth,
+  transition: theme.transitions.create('width', {
+    easing: theme.transitions.easing.sharp,
+    duration: theme.transitions.duration.enteringScreen,
+  }),
+  overflowX: 'hidden',
+  zIndex: theme.zIndex.drawer + 1,
+});
+
+const closedMixin = (theme) => ({
+  transition: theme.transitions.create('width', {
+    easing: theme.transitions.easing.sharp,
+    duration: theme.transitions.duration.leavingScreen,
+  }),
+  overflowX: 'hidden',
+  width: theme.spacing(7), // Show only a strip for icons
+});
+
+const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' })(({ theme, open }) => ({
+  width: drawerWidth,
+  flexShrink: 0,
+  whiteSpace: 'nowrap',
+  boxSizing: 'border-box',
+  '& .MuiDrawer-paper': {
+    backgroundColor: '#FFFAF0',
+    borderRight: '1px solid #4C6E91',
+    ...(open ? openedMixin(theme) : closedMixin(theme)),
+    '&:hover': {
+      width: drawerWidth, // Ensure full width on hover
+      '.menu-text': {
+        display: 'block', // Display the text on hover
+      },
+    },
+  },
+  '&:hover .menu-text': {
+    display: 'block', // Display the text on hover even when not actively hovering
+  },
+  '.menu-text': {
+    display: open ? 'block' : 'none', // Show the text if sidebar is open
+  },
+
+}));
+
+const DrawerHeader = styled('div')(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  padding: theme.spacing(0, 1),
+  ...theme.mixins.toolbar,
+}));
+
+export default function Sidebar({ children }) {
+  const theme = useTheme();
+  const [open, setOpen] = React.useState(true);
+  const [activeLink, setActiveLink] = React.useState(null);
+
+  const toggleDrawer = () => {
+    setOpen((prevOpen) => !prevOpen);
+  };
+
+  const menuItems = [
+    { text: 'Dashboard', icon: <HomeIcon />, link: '/advisory-member-dashboard' },
+    { text: 'Search', icon: <SearchIcon />, link: '/AdvisorMemberSearchcx' },
+    { text: 'Products', icon: <ListIcon />, link: '/products' },
+  ];
+
+  return (
+    <Box sx={{ display: 'flex', height: '100vh' }}>
+      <CssBaseline />
+
+      {/* Sidebar Drawer */}
+      <Drawer
+        variant="permanent"
+        sx={{
+          ...(!open && {
+            ...closedMixin(theme),
+          }),
+          ...(!open && {
+            zIndex: theme.zIndex.drawer + 1,
+          }),
+        }}
+        open={open}
+      >
+        <DrawerHeader>
+          <img
+            src={icon}
+            alt="App Icon"
+            style={{
+              width: '40px',
+              height: '40px',
+              marginRight: open ? '10px' : '0px',
+            }}
+          />
+          {open && (
+            <Typography
+              variant="h6"
+              noWrap
+              sx={{
+                fontFamily: 'Poppins, sans-serif',
+                fontWeight: 500,
+                color: '#4C6E91',
+                marginRight:'auto',
+              }}
+              className="menu-text"
+            >
+              KisaanStar
+            </Typography>
+          )}
+        </DrawerHeader>
+
+        <Divider />
+        <List>
+          {menuItems.map((item, index) => (
+            <Tooltip key={item.text} title={item.text} placement="right" arrow>
+              <ListItem disablePadding sx={{ display: 'block' }}>
+                <ListItemButton
+                  sx={{
+                    minHeight: 48,
+                    justifyContent: open ? 'initial' : 'center',
+                    px: 2.5,
+                    borderRadius: '50px 0 0 50px',
+                    backgroundColor: activeLink === index ? '#4CAF50' : 'transparent',
+                    '&:hover': {
+                      backgroundColor: '#4CAF50', // Highlight on hover
+                      color: 'white',
+                    },
+                  }}
+                  component={Link}
+                  to={item.link}
+                  onClick={() => setActiveLink(index)}
+                >
+                  <ListItemIcon
+                    sx={{
+                      minWidth: 0,
+                      mr: open ? 2 : 'auto',
+                      justifyContent: 'center',
+                      color: activeLink === index ? 'white' : '#4C6E91',
+                    }}
+                  >
+                    {item.icon}
+                  </ListItemIcon>
+                  <ListItemText primary={item.text} className="menu-text" />
+                </ListItemButton>
+              </ListItem>
+            </Tooltip>
+          ))}
+        </List>
+      </Drawer>
+
+      {/* Navbar */}
+      <AdvisorMemberNavbar open={open} toggleDrawer={toggleDrawer} />
+
+      {/* Main Content Area */}
+      <Box
+        sx={{
+          flexGrow: 1,
+          height: '100vh',
+          overflow: 'auto',
+          p: 3,
+          width: open ? `calc(100% - ${drawerWidth}px)` : '100%', // Adjust width dynamically
+        }}
+      >
+        <DrawerHeader />
+        {children}
+      </Box>
+    </Box>
+  );
+}

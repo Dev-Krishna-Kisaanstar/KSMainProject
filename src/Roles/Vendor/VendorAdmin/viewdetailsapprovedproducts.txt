@@ -1,0 +1,412 @@
+import React, { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
+import axios from 'axios';
+import {
+    Box,
+    Typography,
+    Paper,
+    CircularProgress,
+    Button,
+    TextField,
+    Grid,
+} from '@mui/material';
+import EditIcon from '@mui/icons-material/Edit';
+import DescriptionIcon from '@mui/icons-material/Description';
+import StoreIcon from '@mui/icons-material/Store';
+import GppGoodIcon from '@mui/icons-material/GppGood';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import ListAltIcon from '@mui/icons-material/ListAlt';
+import YouTubeIcon from '@mui/icons-material/YouTube';
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney'; // Icon for price
+import Sidebar from '../../../Sidebars/Vendor/VendorAdmin/VendorAdminSidebar';
+
+function ViewDetailsApprovedProducts() {
+    const location = useLocation();
+    const { productId } = location.state; // Get the productId from the state
+    const [productDetails, setProductDetails] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+
+    useEffect(() => {
+        const fetchProductDetails = async () => {
+            try {
+                const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/vendor-admin/products/${productId}`, {
+                    withCredentials: true,
+                });
+                setProductDetails(response.data.product);
+            } catch (error) {
+                if (error.response) {
+                    setError(error.response.data.message);
+                } else {
+                    setError("Failed to fetch product details. Please try again.");
+                }
+                setLoading(false);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchProductDetails();
+    }, [productId]);
+
+    if (loading) {
+        return (
+            <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
+                <CircularProgress />
+            </Box>
+        );
+    }
+
+    if (error) {
+        return (
+            <Box className="text-center" my={4}>
+                <Typography color="error">{error}</Typography>
+            </Box>
+        );
+    }
+
+    return (
+        <div style={pageStyle}>
+            <Sidebar />
+            <Box m={3} style={{ paddingTop: '80px', flex: 1 }}>
+                <Typography variant="h5" align="center" gutterBottom>
+                    Product Details
+                </Typography>
+
+                <Grid container spacing={3}>
+                    <Grid item xs={12}>
+                        <Paper elevation={3} sx={{ padding: 3 }}>
+                            <Typography variant="h6">Basic Information</Typography>
+                            <Grid container spacing={2}>
+                                <Grid item xs={12} sm={6}>
+                                    <TextField
+                                        fullWidth
+                                        label="Product Name"
+                                        value={productDetails.productName}
+                                        InputProps={{
+                                            endAdornment: <EditIcon style={{ color: 'green' }} />
+                                        }}
+                                        variant="outlined"
+                                        disabled
+                                    />
+                                </Grid>
+                                <Grid item xs={12} sm={6}>
+                                    <TextField
+                                        fullWidth
+                                        label="Product Description"
+                                        value={productDetails.productDescription}
+                                        InputProps={{
+                                            endAdornment: <DescriptionIcon style={{ color: 'green' }} />
+                                        }}
+                                        variant="outlined"
+                                        disabled
+                                        multiline
+                                        rows={4}
+                                    />
+                                </Grid>
+                                <Grid item xs={12} sm={6}>
+                                    <TextField
+                                        fullWidth
+                                        label="Brand Name"
+                                        value={productDetails.productBrandName}
+                                        InputProps={{
+                                            endAdornment: <EditIcon style={{ color: 'green' }} />
+                                        }}
+                                        variant="outlined"
+                                        disabled
+                                    />
+                                </Grid>
+                                <Grid item xs={12} sm={6}>
+                                    <TextField
+                                        fullWidth
+                                        label="Seller Shop Name"
+                                        value={productDetails.sellerDetails.shopName}
+                                        InputProps={{
+                                            endAdornment: <StoreIcon style={{ color: 'green' }} />
+                                        }}
+                                        variant="outlined"
+                                        disabled
+                                    />
+                                </Grid>
+                                <Grid item xs={12} sm={6}>
+                                    <TextField
+                                        fullWidth
+                                        label="GST Number"
+                                        value={productDetails.sellerDetails.gstNo}
+                                        InputProps={{
+                                            endAdornment: <GppGoodIcon style={{ color: 'green' }} />
+                                        }}
+                                        variant="outlined"
+                                        disabled
+                                    />
+                                </Grid>
+                                <Grid item xs={12} sm={6}>
+                                    <TextField
+                                        fullWidth
+                                        label="Status"
+                                        value={productDetails.status}
+                                        variant="outlined"
+                                        disabled
+                                    />
+                                </Grid>
+                                <Grid item xs={12} sm={6}>
+                                    <TextField
+                                        fullWidth
+                                        label="Category"
+                                        value={productDetails.category}
+                                        variant="outlined"
+                                        disabled
+                                    />
+                                </Grid>
+                                <Grid item xs={12} sm={6}>
+                                    <TextField
+                                        fullWidth
+                                        label="SubCategory"
+                                        value={productDetails.subCategory}
+                                        variant="outlined"
+                                        disabled
+                                    />
+                                </Grid>
+                                <Grid item xs={12} sm={6}>
+                                    <TextField
+                                        fullWidth
+                                        label="Product Based Price"
+                                        value={productDetails.productBasedPrice}
+                                        InputProps={{
+                                            endAdornment: <AttachMoneyIcon style={{ color: 'green' }} />
+                                        }}
+                                        variant="outlined"
+                                        disabled
+                                    />
+                                </Grid>
+                                <Grid item xs={12} sm={6}>
+                                    <TextField
+                                        fullWidth
+                                        label="MRP"
+                                        value={productDetails.MRP}
+                                        InputProps={{
+                                            endAdornment: <AttachMoneyIcon style={{ color: 'green' }} />
+                                        }}
+                                        variant="outlined"
+                                        disabled
+                                    />
+                                </Grid>
+                                <Grid item xs={12} sm={6}>
+                                    <TextField
+                                        fullWidth
+                                        label="Sell Price"
+                                        value={productDetails.sellPrice}
+                                        InputProps={{
+                                            endAdornment: <AttachMoneyIcon style={{ color: 'green' }} />
+                                        }}
+                                        variant="outlined"
+                                        disabled
+                                    />
+                                </Grid>
+                            </Grid>
+                        </Paper>
+                    </Grid>
+
+                    <Grid item xs={12}>
+                        <Paper elevation={3} sx={{ padding: 3 }}>
+                            <Typography variant="h6">Additional Information</Typography>
+                            <Grid container spacing={2}>
+                                <Grid item xs={12} sm={6}>
+                                    <TextField
+                                        fullWidth
+                                        label="Mode of Use"
+                                        value={productDetails.modeOfUse}
+                                        variant="outlined"
+                                        disabled
+                                    />
+                                </Grid>
+                                <Grid item xs={12} sm={6}>
+                                    <TextField
+                                        fullWidth
+                                        label="Chemical Composition"
+                                        value={productDetails.productChemicalComposition}
+                                        variant="outlined"
+                                        disabled
+                                    />
+                                </Grid>
+                                <Grid item xs={12} sm={6}>
+                                    <TextField
+                                        fullWidth
+                                        label="Note"
+                                        value={productDetails.note}
+                                        variant="outlined"
+                                        disabled
+                                    />
+                                </Grid>
+                                <Grid item xs={12} sm={6}>
+                                    <TextField
+                                        fullWidth
+                                        label="Additional Description"
+                                        value={productDetails.descriptionSecond}
+                                        variant="outlined"
+                                        disabled
+                                        multiline
+                                        rows={4}
+                                    />
+                                </Grid>
+
+                                {/* Features */}
+                                <Grid item xs={12} sm={6}>
+                                    <Typography variant="h6">Features and Benefits</Typography>
+                                    {productDetails.featuresAndBenefits?.map((feature, index) => (
+                                        <Box key={index} display="flex" alignItems="center">
+                                            <CheckCircleOutlineIcon style={{ color: '#4caf50', marginRight: 8 }} />
+                                            <Typography>{feature}</Typography>
+                                        </Box>
+                                    ))}
+                                </Grid>
+                                
+                                {/* How to Use */}
+                                <Grid item xs={12} sm={6}>
+                                    <Typography variant="h6">How to Use</Typography>
+                                    {productDetails.howToUse?.map((instruction, index) => (
+                                        <Box key={index} display="flex" alignItems="center">
+                                            <CheckCircleOutlineIcon style={{ color: '#4caf50', marginRight: 8 }} />
+                                            <Typography>{instruction}</Typography>
+                                        </Box>
+                                    ))}
+                                </Grid>
+                                
+                                {/* Doses */}
+                                <Grid item xs={12} sm={6}>
+                                    <Typography variant="h6">Doses</Typography>
+                                    {productDetails.doses?.map((dose, index) => (
+                                        <Box key={index} display="flex" alignItems="center">
+                                            <CheckCircleOutlineIcon style={{ color: '#4caf50', marginRight: 8 }} />
+                                            <Typography>{dose}</Typography>
+                                        </Box>
+                                    ))}
+                                </Grid>
+
+                                {/* YouTube Links */}
+                                <Grid item xs={12} sm={6}>
+                                    <Typography variant="h6">YouTube Video Links</Typography>
+                                    {productDetails.youtubeVideoLinks?.map((link, index) => (
+                                        <Box key={index} display="flex" alignItems="center">
+                                            <YouTubeIcon style={{ color: '#4caf50', marginRight: 8 }} />
+                                            <Typography>{link}</Typography>
+                                        </Box>
+                                    ))}
+                                </Grid>
+                                
+                                {/* FAQs */}
+                                <Grid item xs={12} sm={6}>
+                                    <Typography variant="h6">FAQs</Typography>
+                                    {productDetails.faqs?.map((faq) => (
+                                        <Box key={faq.question} display="flex" alignItems="center">
+                                            <ListAltIcon style={{ color: '#4caf50', marginRight: 8 }} />
+                                            <Typography>{`Q: ${faq.question} A: ${faq.answer}`}</Typography>
+                                        </Box>
+                                    ))}
+                                </Grid>
+                                
+                                {/* Product Images */}
+                                <Grid item xs={12} sm={6}>
+                                    <Typography variant="h6">Product Images:</Typography>
+                                    <Grid container spacing={1}>
+                                        {productDetails.productImages?.map((image, index) => (
+                                            <Grid item xs={4} key={index}>
+                                                <img src={image} alt={`Product ${index}`} style={{ maxHeight: '150px', borderRadius: '5px', width: '100%' }} />
+                                            </Grid>
+                                        ))}
+                                    </Grid>
+                                </Grid>
+
+                                {/* Banner Images */}
+                                <Grid item xs={12} sm={6}>
+                                    <Typography variant="h6">Banner Images:</Typography>
+                                    <Grid container spacing={1}>
+                                        {productDetails.productBannerImages?.map((image, index) => (
+                                            <Grid item xs={4} key={index}>
+                                                <img src={image} alt={`Banner ${index}`} style={{ maxHeight: '150px', borderRadius: '5px', width: '100%' }} />
+                                            </Grid>
+                                        ))}
+                                    </Grid>
+                                </Grid>
+                            </Grid>
+                        </Paper>
+                    </Grid>
+
+                    {/* Stock Information */}
+                    <Grid item xs={12}>
+                        <Paper elevation={3} sx={{ padding: 3 }}>
+                            <Typography variant="h6">Stock Information</Typography>
+                            <Grid container spacing={2}>
+                                <Grid item xs={12} sm={6}>
+                                    <Typography variant="subtitle1">Stock On Hold: {productDetails.stock?.stockOnHold}</Typography>
+                                </Grid>
+                                <Grid item xs={12} sm={6}>
+                                    <Typography variant="subtitle1">Stock Listed For Sell: {productDetails.stock?.stockListedForSell}</Typography>
+                                </Grid>
+                                <Grid item xs={12} sm={6}>
+                                    <Typography variant="subtitle1">Total Stock: {productDetails.stock?.totalStock}</Typography>
+                                </Grid>
+                            </Grid>
+                        </Paper>
+                    </Grid>
+                </Grid>
+                
+                <Box mt={3} className="text-center">
+                    <Button variant="contained" onClick={() => window.history.back()} className="ms-2">
+                        Go Back
+                    </Button>
+                </Box>
+            </Box>
+        </div>
+    );
+}
+
+const pageStyle = {
+    display: 'flex',
+    flexDirection: 'row',
+    minHeight: '100vh',
+    backgroundColor: '#1e1e2f',
+    color: '#fff',
+    paddingTop: '80px',
+    flex: 1,
+};
+
+export default ViewDetailsApprovedProducts;
+
+
+
+
+// const handleSave = async () => {
+  //     console.log("Saving product details:", productDetails);
+  //     try {
+  //         await axios.patch(
+  //             `${process.env.REACT_APP_API_URL}/api/vendor-admin/update-product/${productId}`,
+  //             productDetails,
+  //             { withCredentials: true }
+  //         );
+  //         toast.success("Product details updated successfully!");
+  //         console.log("Product details updated successfully!");
+  //     } catch (error) {
+  //         console.error("Error saving product details:", error);
+  //         toast.error("Failed to save product details.");
+  //     } finally {
+  //         setIsEditing(false);
+  //         console.log("Exiting editing mode.");
+  //     }
+  // };
+
+  // if (loading) {
+  //     return (
+  //         <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
+  //             <CircularProgress />
+  //         </Box>
+  //     );
+  // }
+
+  // if (error) {
+  //     return (
+  //         <Box className="text-center" my={4}>
+  //             <Typography color="error">{error}</Typography>
+  //         </Box>
+  //     );
+  // }

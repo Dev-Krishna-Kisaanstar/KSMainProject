@@ -10,62 +10,27 @@ import {
     Button,
     CircularProgress,
 } from '@mui/material';
+import { Link, useParams } from 'react-router-dom';
 import axios from 'axios';
+import './ProductList.css';  // Ensure the path is correct
 
-function Productlist() {
-    const [products, setProducts] = useState([]);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [visibleCount, setVisibleCount] = useState(6); // State to track visible products
-    const [expandedProduct, setExpandedProduct] = useState(null); // State to track which product is expanded
-
-    useEffect(() => {
-        const fetchProducts = async () => {
-            try {
-                setLoading(true); // Set loading to true before fetching
-                const response = await axios.get("https://api.kisaanstar.com/api/operational-admin/products");
-                setProducts(response.data);
-            } catch (err) {
-                setError(err.message);
-            } finally {
-                setLoading(false); // Set loading to false after fetching
-            }
-        };
-
-        fetchProducts();
-    }, []);
-
-    // Filter products based on the search term
-    const filteredProducts = products.filter(product =>
-        product.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-
-    const handleViewMore = () => {
-        setVisibleCount((prevCount) => prevCount + 6); // Increase the number of visible products
-    };
-
-    const toggleDescription = (productId) => {
-        // Toggle the expanded state for the specific product
-        if (expandedProduct === productId) {
-            setExpandedProduct(null); // Collapse
-        } else {
-            setExpandedProduct(productId); // Expand
-        }
-    };
-
-    // Button styles similar to Home component
-    const buttonStyles = {
-        fontFamily: 'Exo, sans-serif',
+const styles = {
+    typography: {
+        fontFamily: 'Poppins, sans-serif',
+        fontSize: '1.5rem',
+    },
+    button: {
+        fontFamily: 'Poppins, sans-serif',
         fontWeight: 600,
-        fontSize: '1rem',
-        color: '#FFF',
+        fontSize: '0.9rem',
+        color: '#000',
         backgroundColor: '#DAB060',
         border: 0,
         padding: '8px 16px',
         borderRadius: '20px',
         position: 'relative',
-        transition: 'transform 0.1s',
+        marginTop: '20px',
+        transition: 'transform 0.1s, background-color 0.3s, color 0.3s',
         '&:hover': {
             transform: 'translateY(-10%) scale(1.1)',
             boxShadow: '0 0 10px rgba(218, 176, 96, 0.5)',
@@ -73,11 +38,105 @@ function Productlist() {
         '&:active': {
             transform: 'translateY(5%) scale(0.9)',
         },
+    },
+    productCard: {
+        position: 'relative',
+        borderRadius: '20px',
+        overflow: 'hidden',
+        textAlign: 'center',
+        transition: 'transform 0.2s',
+        height: '350px', // Fixed height for uniformity
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+    },
+    cardImage: {
+        width: '100%',
+        height: '200px', // Fixed height for images
+        objectFit: 'cover',
+    },
+    overlay: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        backgroundColor: 'rgba(128, 128, 128, 0.8)', // Darker overlay
+        opacity: 0, // Default opacity
+        transition: 'opacity 0.3s ease',
+    },
+    cardHover: {
+        '&:hover $overlay': {
+            opacity: 1, // Show overlay on hover
+        },
+    },
+    cardContent: {
+        padding: '16px',
+        flexGrow: 1, // Ensures content takes up remaining space
+    },
+};
+
+const categories = {
+    "Agro Chemicals": ["Fungicide", "Insecticide", "Herbicide", "Fertilizers", "Micronutrients"],
+    "Allied Products": ["Electrical Products", "Plastic Sheets", "Plastic Nets"],
+    "Irrigation": ["Sprinkler", "Drip", "Motors and Pumps", "Valves"],
+    "Seeds": ["Animal Feed-Grass Seed", "Cereals", "Flowers", "Fruits and Vegetables", "Oil Seed", "Pulses"],
+    "Tools and Machinery": ["Plant Care Tools", "Sprayer", "Sprayer Part", "Safety Equipment"],
+    "Garden": ["Horticulture"],
+};
+
+function ProductList() {
+    const { categoryName, subCategoryName } = useParams();
+    const [products, setProducts] = useState([]);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [visibleCount, setVisibleCount] = useState(6);
+    const [selectedCategory, setSelectedCategory] = useState(categoryName || "All");
+    const [selectedSubCategory, setSelectedSubCategory] = useState(subCategoryName || null);
+
+    useEffect(() => {
+        const fetchProducts = async () => {
+            try {
+                setLoading(true);
+                const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/customers/get-products`, {
+                    withCredentials: true,
+                });
+                setProducts(response.data.products || []);
+                console.log(response.data.products);
+
+            } catch (err) {
+                setError(err.message);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchProducts();
+    }, []);
+
+    const filteredProducts = Array.isArray(products) && products.length > 0 ? products.filter(product => {
+        const matchesSearchTerm = product && product.productName && product.productName.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesCategory = selectedCategory === "All" || product.category === selectedCategory;
+
+        // Check if the product is enabled
+        const isEnabled = product.demovarable !== "desable";
+
+        if (selectedSubCategory) {
+            return matchesSearchTerm && matchesCategory && product.subCategory === selectedSubCategory && isEnabled;
+        }
+
+        return matchesSearchTerm && matchesCategory && isEnabled;
+    }) : [];
+
+    const handleViewMore = () => {
+        setVisibleCount(prevCount => prevCount + 6);
     };
+
+    const [hoveredProduct, setHoveredProduct] = useState(null);
 
     return (
         <Container className="mt-5">
-            <Typography variant="h4" className="mb-4" align="center" sx={{ fontFamily: 'Exo, sans-serif' }}>
+            <Typography variant="h4" className="mb-4" align="center" sx={styles.typography}>
                 Product List
             </Typography>
             <TextField
@@ -88,91 +147,148 @@ function Productlist() {
                 className="mb-4"
                 sx={{
                     borderRadius: '20px',
-                    fontFamily: 'Inter, sans-serif',
-                    maxWidth: '400px', // Set a maximum width
-                    width: '100%', // Ensure it takes full width of its parent container
-                    margin: '0 auto', // Center it horizontally
+                    fontFamily: 'Poppins, sans-serif',
+                    maxWidth: '400px',
+                    width: '100%',
+                    margin: '0 auto',
                 }}
             />
+
+            <div className="category-buttons" style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '10px' }}>
+                <Button
+                    variant="outlined"
+                    onClick={() => setSelectedCategory("All")}
+                    sx={selectedCategory === "All" ? { ...styles.button, ...styles.activeButton } : styles.button}
+                >
+                    All
+                </Button>
+                {Object.keys(categories).map(category => (
+                    <Button
+                        key={category}
+                        variant="outlined"
+                        onClick={() => setSelectedCategory(category)}
+                        sx={selectedCategory === category ? { ...styles.button, ...styles.activeButton } : styles.button}
+                    >
+                        {category}
+                    </Button>
+                ))}
+            </div>
+
+            {selectedCategory !== "All" && (
+                <div className="subcategory-buttons" style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '10px' }}>
+                    {categories[selectedCategory]?.map(subCategory => (
+                        <Button
+                            key={subCategory}
+                            variant="outlined"
+                            onClick={() => {
+                                setSelectedSubCategory(subCategory);
+                                setVisibleCount(6);
+                            }}
+                            sx={selectedSubCategory === subCategory ? { ...styles.button, ...styles.activeButton } : styles.button}
+                        >
+                            {subCategory}
+                        </Button>
+                    ))}
+                </div>
+            )}
 
             {loading ? (
                 <Container align="center">
                     <CircularProgress />
                 </Container>
             ) : error ? (
-                <Typography variant="h6" align="center" className="mt-4" sx={{ fontFamily: 'Inter, sans-serif' }}>
+                <Typography variant="h6" align="center" className="mt-4" sx={styles.typography}>
                     Error: {error}
                 </Typography>
             ) : (
                 <>
                     <Grid container spacing={3}>
-                        {filteredProducts.slice(0, visibleCount).map(product => (
-                            <Grid item xs={12} sm={6} md={4} key={product._id}>
-                                <Card className="shadow-lg" sx={{ borderRadius: '20px', overflow: 'hidden' }}>
-                                    <CardMedia
-                                        component="img"
-                                        height="300" // Reduced height for better mobile display
-                                        image={product.images[0] || 'https://via.placeholder.com/500'} // Use the first image or fallback
-                                        alt={product.name}
-                                        style={{ borderRadius: '20px 20px 0 0', objectFit: 'cover' }} // Rounded corners and cover
-                                    />
-                                    <CardContent>
-                                        <Typography variant="h5" component="div" sx={{ fontFamily: 'Exo, sans-serif' }}>
-                                            {product.name}
-                                        </Typography>
-                                        <Typography variant="body2" color="text.secondary" sx={{ fontFamily: 'Inter, sans-serif' }}>
-                                            {expandedProduct === product._id ? (
-                                                <span>{product.description}</span>
-                                            ) : (
-                                                <span>
-                                                    {product.description.length > 100 ? (
-                                                        <>
-                                                            {product.description.substring(0, 100)}... 
-                                                            <Button 
-                                                                onClick={() => toggleDescription(product._id)} 
-                                                                variant="text" 
-                                                                sx={{
-                                                                    fontFamily: 'Inter, sans-serif',
-                                                                    textTransform: 'none',
-                                                                    padding: 0,
-                                                                    color: 'primary.main',
-                                                                    '&:hover': {
-                                                                        textDecoration: 'underline',
-                                                                    },
-                                                                }}
-                                                            >
-                                                                Read More
-                                                            </Button>
-                                                        </>
-                                                    ) : (
-                                                        product.description
-                                                    )}
-                                                </span>
-                                            )}
-                                        </Typography>
-                                        <Typography variant="h6" className="mt-2" sx={{ fontFamily: 'Exo, sans-serif' }}>
-                                            ₹ {product.price}
-                                        </Typography>
-                                    </CardContent>
-                                </Card>
-                            </Grid>
-                        ))}
+                        {filteredProducts.slice(0, visibleCount).map(product => {
+                            const isOutOfStock = product?.stock?.stockListedForSell === 0;
+                            const isComingSoon = product?.stock === null;
+
+                            return (
+                                <Grid item xs={6} sm={4} md={3} lg={2} key={product?._id}>
+                                    {isComingSoon ? (
+                                        <div style={{ pointerEvents: 'none', color: 'gray' }}>
+                                            <Card className="product-card" sx={{ ...styles.productCard, ...styles.cardHover }}>
+                                                <CardMedia
+                                                    component="img"
+                                                    image={product?.productImages[0] || 'https://via.placeholder.com/120'}
+                                                    alt={product?.productName}
+                                                    sx={styles.cardImage}
+                                                />
+                                                <div style={{ ...styles.overlay, opacity: 1 }}>
+                                                    <Typography variant="h6" style={{ color: '#fff', textAlign: 'center', paddingTop: '50%' }}>
+                                                        Coming Soon
+                                                    </Typography>
+                                                </div>
+                                                <CardContent>
+                                                    <Typography variant="h6" component="div" className="product-title">
+                                                        {product?.productName}
+                                                    </Typography>
+                                                    <Typography variant="body2" className="product-price">
+                                                        {product.toggleSell ? (
+                                                            <>₹ {product?.sellPrice} <span style={{ textDecoration: 'line-through' }}>₹ {product?.MRP}</span></>
+                                                        ) : (
+                                                            <>₹ {product?.MRP}</>
+                                                        )}
+                                                    </Typography>
+                                                </CardContent>
+                                            </Card>
+                                        </div>
+                                    ) : (
+                                        <Link to={`/product/${product?._id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                                            <Card
+                                                className="product-card"
+                                                sx={{ ...styles.productCard, ...styles.cardHover }}
+                                                onMouseEnter={() => setHoveredProduct(product?._id)}
+                                                onMouseLeave={() => setHoveredProduct(null)}
+                                            >
+                                                <CardMedia
+                                                    component="img"
+                                                    image={
+                                                        hoveredProduct === product?._id
+                                                            ? product?.productImages[1] || product?.productImages[0] || 'https://via.placeholder.com/120'
+                                                            : product?.productImages[0] || 'https://via.placeholder.com/120'
+                                                    }
+                                                    alt={product?.productName}
+                                                    sx={styles.cardImage}
+                                                />
+                                                {isOutOfStock && (
+                                                    <div style={{ ...styles.overlay, opacity: 1 }}>
+                                                        <Typography variant="h6" style={{ color: '#fff', textAlign: 'center', paddingTop: '50%' }}>
+                                                            Out Of Stock
+                                                        </Typography>
+                                                    </div>
+                                                )}
+                                                <CardContent sx={styles.cardContent}>
+                                                    <Typography variant="h6" component="div" className="product-title">
+                                                        {product?.productName}
+                                                    </Typography>
+                                                    <Typography variant="body2" className="product-price">
+                                                        {product.toggleSell ? (
+                                                            <>₹ {product?.sellPrice} <span style={{ textDecoration: 'line-through' }}>₹ {product?.MRP}</span></>
+                                                        ) : (
+                                                            <>₹ {product?.MRP}</>
+                                                        )}
+                                                    </Typography>
+                                                </CardContent>
+                                            </Card>
+                                        </Link>
+                                    )}
+                                </Grid>
+                            );
+                        })}
                     </Grid>
-                    {filteredProducts.length === 0 && (
-                        <Typography variant="h6" align="center" className="mt-4" sx={{ fontFamily: 'Inter, sans-serif' }}>
-                            No products found.
-                        </Typography>
-                    )}
                     {visibleCount < filteredProducts.length && (
-                        <div className="text-center mt-4">
-                            <Button
-                                variant="contained"
-                                sx={buttonStyles} // Apply the same button styles here
-                                onClick={handleViewMore}
-                            >
-                                View More
-                            </Button>
-                        </div>
+                        <Button
+                            onClick={handleViewMore}
+                            sx={styles.button}
+                            fullWidth
+                        >
+                            View More Products
+                        </Button>
                     )}
                 </>
             )}
@@ -180,4 +296,4 @@ function Productlist() {
     );
 }
 
-export default Productlist;
+export default ProductList;

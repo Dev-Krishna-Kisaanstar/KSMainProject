@@ -1,0 +1,74 @@
+import React, { useEffect, useState } from 'react';
+import { Navigate, useNavigate, useLocation } from 'react-router-dom';
+import Cookies from 'js-cookie';
+import axios from 'axios';
+
+const AdvMemberPrivateRoute = ({ children, isLoggedIn, setIsLoggedIn }) => {
+  const [authenticated, setAuthenticated] = useState(null);
+  const [error, setError] = useState('');
+  const location = useLocation(); // Get location to access state
+  const navigate = useNavigate(); // Hook for navigation
+
+  // Retrieve mobileNumber and customerId from location state
+  const { mobileNumber } = location.state || {}; // Only mobileNumber needed for search
+
+  const [customerId, setCustomerId] = useState(null); // Store customerId
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        await axios.get(`${process.env.REACT_APP_API_URL}/api/advisory-member/dashboard`, {
+          withCredentials: true,
+        });
+        setAuthenticated(true);
+      } catch {
+        setAuthenticated(false);
+        setIsLoggedIn(false);
+        navigate('/advisormemberlogin');
+      }
+    };
+
+    // Check authentication on mount and set interval for periodic check
+    checkAuth();
+    const intervalId = setInterval(() => checkAuth(), 300000); // Check every 5 minutes
+    return () => clearInterval(intervalId); // Cleanup on unmount
+  }, [setIsLoggedIn, navigate]);
+
+  useEffect(() => {
+    if (mobileNumber) {
+      const fetchCustomerData = async () => {
+        try {
+          const response = await axios.get(
+            `${process.env.REACT_APP_API_URL}/api/advisory-member/search-customer/${mobileNumber}`,
+            { withCredentials: true }
+          );
+          console.log(response.data);
+          
+          const fetchedCustomerId = response.data.customer._id; // Store customer ID from API response
+          console.log('Customer Data:', fetchedCustomerId);
+          setCustomerId(fetchedCustomerId); // Set customerId state
+        } catch (error) {
+          setError('Failed to fetch customer data');
+        }
+      };
+
+      fetchCustomerData();
+    }
+  }, [mobileNumber]); // Only run when mobileNumber changes
+
+  // While checking authentication or fetching customer data, show loading
+  if (authenticated === null || customerId === null) {
+    return <div>Loading...</div>;
+  }
+
+  // If user is authenticated and has valid cookie, allow access
+  const isAdvMemberAuthenticated = Cookies.get('frontendadvisorycustomertoken');
+  if ( customerId) {
+    return <Navigate to={`/AdvisorMemberseenewcxdetails/${customerId}`} />;
+  }
+
+  // Redirect to login if not authenticated
+  return <Navigate to={`/advisormemberlogin`} />;
+};
+
+export default AdvMemberPrivateRoute;

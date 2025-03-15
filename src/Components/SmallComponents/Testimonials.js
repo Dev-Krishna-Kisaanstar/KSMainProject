@@ -32,13 +32,13 @@ function Testimonials() {
             <Box textAlign="center" mb={5}>
                 <Typography
                     variant="subtitle1"
-                    sx={{ fontFamily: 'Exo, sans-serif', color: '#f8b500', fontWeight: 'bold' }}
+                    sx={{ fontFamily: 'Poppins, sans-serif', color: '#f8b500', fontWeight: 'bold' }} // Updated font
                 >
                     Our Testimonials
                 </Typography>
                 <Typography
                     variant="h4"
-                    sx={{ fontFamily: 'Exo, sans-serif', color: 'black', fontWeight: 'bold', mt: 1 }}
+                    sx={{ fontFamily: 'Poppins, sans-serif', color: 'black', fontWeight: 'bold', mt: 1 }} // Updated font
                 >
                     What They Say
                 </Typography>
@@ -74,7 +74,7 @@ function Testimonials() {
                                 <Typography
                                     variant="body2"
                                     sx={{
-                                        fontFamily: 'Inter, sans-serif',
+                                        fontFamily: 'Poppins, sans-serif', // Updated font
                                         color: '#555',
                                         mb: 3,
                                         lineHeight: '1.8rem',
@@ -85,7 +85,7 @@ function Testimonials() {
                                 <Typography
                                     variant="h6"
                                     sx={{
-                                        fontFamily: 'Exo, sans-serif',
+                                        fontFamily: 'Poppins, sans-serif', // Updated font
                                         fontWeight: 'bold',
                                         color: 'black',
                                     }}
@@ -95,7 +95,7 @@ function Testimonials() {
                                 <Typography
                                     variant="body2"
                                     sx={{
-                                        fontFamily: 'Inter, sans-serif',
+                                        fontFamily: 'Poppins, sans-serif', // Updated font
                                         color: '#777',
                                     }}
                                 >

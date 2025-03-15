@@ -1,0 +1,228 @@
+import * as React from 'react';
+import { styled, useTheme } from '@mui/material/styles';
+import { Box, CssBaseline, Toolbar, Typography, Divider, IconButton, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Tooltip } from '@mui/material';
+
+import MuiDrawer from '@mui/material/Drawer';
+import MuiAppBar from '@mui/material/AppBar';
+import MenuIcon from '@mui/icons-material/Menu';
+import LogoutIcon from '@mui/icons-material/Logout';
+import HomeIcon from '@mui/icons-material/Home';
+import SearchIcon from '@mui/icons-material/Search';
+import ListIcon from '@mui/icons-material/List';
+
+import icon from '../../../Assets/Logo/icon.png';
+import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import Cookies from 'js-cookie';
+
+const drawerWidth = 240;
+
+// MUI drawer styles
+const openedMixin = (theme) => ({
+  width: drawerWidth,
+  transition: theme.transitions.create('width', {
+    easing: theme.transitions.easing.sharp,
+    duration: theme.transitions.duration.enteringScreen,
+  }),
+  overflowX: 'hidden',
+});
+
+const closedMixin = (theme) => ({
+  width: 70,
+  transition: theme.transitions.create('width', {
+    easing: theme.transitions.easing.sharp,
+    duration: theme.transitions.duration.leavingScreen,
+  }),
+  overflowX: 'hidden',
+  [theme.breakpoints.up('sm')]: {
+    width: 70,
+  },
+});
+
+// Drawer header styles
+const DrawerHeader = styled('div')(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'flex-start',
+  padding: theme.spacing(0, 1),
+  ...theme.mixins.toolbar,
+}));
+
+// AppBar styles
+const AppBar = styled(MuiAppBar, {
+  shouldForwardProp: (prop) => prop !== 'open',
+})(({ theme, open }) => ({
+  zIndex: theme.zIndex.drawer, // Lower z-index to place below sidebar
+  backgroundColor: '#4C6E91',
+  transition: theme.transitions.create(['width', 'margin'], {
+    easing: theme.transitions.easing.sharp,
+    duration: theme.transitions.duration.leavingScreen,
+  }),
+  ...(open && {
+    marginLeft: drawerWidth,
+    width: `calc(100% - ${drawerWidth}px)`,
+    transition: theme.transitions.create(['width', 'margin'], {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
+  }),
+}));
+
+const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' })(
+  ({ theme, open }) => ({
+    width: drawerWidth,
+    flexShrink: 0,
+    whiteSpace: 'nowrap',
+    boxSizing: 'border-box',
+    zIndex: theme.zIndex.drawer + 1, // Higher z-index to ensure visibility
+    '& .MuiDrawer-paper': {
+      backgroundColor: '#FFFAF0',
+      borderRight: '1px solid #4C6E91',
+      ...(open ? openedMixin(theme) : closedMixin(theme)),
+    },
+  })
+);
+
+
+// Logout function
+const logout = async (setIsLoggedIn, navigate) => {
+  try {
+    const response = await axios.post(`${process.env.REACT_APP_API_URL}/api/advisory-member/logout`, {}, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      withCredentials: true,
+    });
+    if (response.status === 200) {
+      Cookies.remove('customerSession');
+      setIsLoggedIn(false);
+      navigate('/');
+    }
+  } catch (error) {
+    console.error('Logout failed:', error.response ? error.response.data : 'Server error');
+  }
+};
+
+export default function Sidebar({ children }) {
+  const theme = useTheme();
+  const [open, setOpen] = React.useState(false); // Start with the drawer closed
+  const [isDarkMode, setIsDarkMode] = React.useState(false);
+  const [isLoggedIn, setIsLoggedIn] = React.useState(false);
+  const navigate = useNavigate();
+  const [activeLink, setActiveLink] = React.useState(null); // State to track active link
+
+  const handleDrawerToggle = () => {
+    setOpen((prev) => !prev); // Toggle the drawer state
+  };
+
+  const toggleTheme = () => {
+    setIsDarkMode((prev) => !prev);
+    document.querySelector("body").setAttribute('data-theme', isDarkMode ? 'light' : 'dark');
+  };
+
+  const menuItems = [
+    { text: 'Dashboard', icon: <HomeIcon />, link: '/advisory-member-dashboard' },
+    { text: 'Search', icon: <SearchIcon />, link: '/AdvisorMemberSearchcx' },
+    { text: 'Products', icon: <ListIcon />, link: '/products' },
+  ];
+
+  return (
+    <Box sx={{ display: 'flex' }}>
+      <CssBaseline />
+
+      {/* Drawer with fixed open and toggle behavior */}
+      <Drawer
+        variant="permanent"
+        open={open}
+        onClick={() => setOpen((prev) => !prev)} // Toggle open state when clicking the drawer
+        onMouseEnter={() => setOpen(true)} // Open on hover
+        onMouseLeave={() => setOpen(false)} // Close when mouse leaves
+      >
+        <DrawerHeader>
+          <img
+            src={icon}
+            alt="App Icon"
+            style={{ width: '40px', height: '40px', marginRight: '10px' }}
+          />
+          {open && (
+            <Typography variant="h6" noWrap component="span" sx={{ fontFamily: 'Poppins, sans-serif', fontWeight: '500', color: '#4C6E91' }}>
+              KisaanStar
+            </Typography>
+          )}
+        </DrawerHeader>
+
+        <Divider />
+        <List>
+          {menuItems.map((item, index) => (
+            <ListItem key={item.text} disablePadding sx={{ display: 'block' }}>
+              <Tooltip title={item.text} placement="right" arrow>
+                <ListItemButton
+                  sx={{
+                    minHeight: 48,
+                    justifyContent: open ? 'initial' : 'center',
+                    px: 2.5,
+                    borderRadius: '50px 0 0 50px', // Rounded border
+                    backgroundColor: activeLink === index ? '#4CAF50' : 'transparent', // Active background color
+                    '&:hover': {
+                      backgroundColor: open ? 'transparent' : '#FFD700', // Only apply hover effect when closed
+                    },
+                  }}
+                  component={Link}
+                  to={item.link}
+                  onClick={() => setActiveLink(index)}
+                >
+                  <ListItemIcon
+                    sx={{
+                      minWidth: 0,
+                      mr: open ? 2 : 'auto',
+                      justifyContent: 'center',
+                      color: activeLink === index ? 'white' : '#4C6E91', // Icon color
+                    }}
+                  >
+                    {item.icon}
+                  </ListItemIcon>
+                  <ListItemText primary={item.text} sx={{ opacity: open ? 1 : 0, color: activeLink === index ? 'white' : 'initial' }} />
+                </ListItemButton>
+              </Tooltip>
+            </ListItem>
+          ))}
+        </List>
+      </Drawer>
+
+      <AppBar position="absolute" open={open}>
+        <Toolbar sx={{ display: 'flex', justifyContent: 'space-between', p: 1 }}>
+          <IconButton sx={{ color: 'white' }} aria-label="open drawer" onClick={handleDrawerToggle} edge="start">
+            <MenuIcon />
+          </IconButton>
+          <Typography variant="h6" noWrap component="div" sx={{ color: 'white' }}>
+            Your App Title
+          </Typography>
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <IconButton onClick={toggleTheme}>
+              {isDarkMode ? (
+                <img src={require('../../../Components/DarkMode/Sun.svg').default} alt="Light Mode" style={{ width: '24px', height: '24px' }} />
+              ) : (
+                <img src={require('../../../Components/DarkMode/Moon.svg').default} alt="Dark Mode" style={{ width: '24px', height: '24px' }} />
+              )}
+            </IconButton>
+            <IconButton onClick={() => logout(setIsLoggedIn, navigate)}>
+              <LogoutIcon sx={{ color: 'white' }} />
+            </IconButton>
+          </Box>
+        </Toolbar>
+      </AppBar>
+
+      <Box
+        component="main"
+        sx={{
+          backgroundColor: isDarkMode ? '#303030' : '#f4f6f8',
+          flexGrow: 1,
+          height: '100vh',
+          overflow: 'auto',
+        }}
+      >
+        {children}
+      </Box>
+    </Box>
+  );
+}

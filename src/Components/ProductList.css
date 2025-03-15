@@ -1,0 +1,81 @@
+.product-card {
+    position: relative;
+    text-align: center; /* Center align text */
+    border-radius: 15px;
+    overflow: hidden;
+    transition: transform 0.2s;
+}
+:root {
+    --bs-breadcrumb-divider: ">";
+}
+
+.product-card:hover {
+    transform: scale(1.05);
+}
+
+.product-image {
+    width: 120px; /* Ensure image size is 120px */
+    height: 120px; /* Ensure image height */
+    object-fit: cover;
+    transition: opacity 0.3s ease;
+    margin: 0 auto; /* Center align image */
+}
+
+.product-icons {
+    position: absolute;
+    bottom: 10px; /* Position icons above the bottom */
+    left: 50%; /* Center the icons */
+    transform: translateX(-50%); /* Adjust positioning */
+    display: flex;
+    gap: 10px; /* Spacing between icons */
+    opacity: 0; /* Initially hidden */
+    transition: opacity 0.3s ease; /* Smooth transition */
+}
+
+.product-card:hover .product-icons {
+    opacity: 1; /* Show icons on hover */
+}
+
+.rating {
+    display: flex;
+    justify-content: center;
+}
+
+.star {
+    color: gold;
+    font-size: 0.8rem; /* Adjust star size */
+}
+
+/* Reduced font sizes */
+.product-title {
+    font-size: 0.9rem; /* Adjust for product name */
+}
+
+.product-price {
+    font-size: 0.85rem; /* Adjust for product price */
+}
+.category-buttons {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding-bottom: 20px;
+}
+
+.subcategory-buttons {
+    padding-top: 10px;
+    padding-bottom: 10px;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+.breadcrumb {
+    display: flex;
+    align-items: center;
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+    content: var(--bs-breadcrumb-divider);
+    padding: 0 5px;
+}

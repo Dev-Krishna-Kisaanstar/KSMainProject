@@ -11,6 +11,35 @@ import {
   AttachMoney 
 } from '@mui/icons-material';
 
+const buttonStyles = {
+    backgroundColor: 'green',
+    color: 'white',
+    '&:hover': {
+        backgroundColor: 'darkgreen',
+    },
+};
+
+const styles = {
+    fontFamily: 'Poppins, sans-serif',
+    logoSection: {
+        position: 'relative',
+        padding: '20px 0',
+        backgroundColor: 'rgba(211, 211, 211, 0.5)', // Light gray background
+        borderRadius: '5px',
+        overflow: 'hidden',
+    },
+    textTitle: {
+        fontFamily: 'Poppins, sans-serif',
+        color: 'black',
+        fontSize: '2rem',
+        fontWeight: 'bold',
+    },
+    cardText: {
+        fontFamily: 'Poppins, sans-serif',
+        color: '#555',
+    }
+};
+
 function Services() {
     return (
         <div>
@@ -20,7 +49,7 @@ function Services() {
 
                 {/* Our Services Section */}
                 <div className="text-center mt-5 mb-4">
-                    <h2 style={{ fontFamily: 'Exo, sans-serif', color: 'black', fontSize: '2rem', fontWeight: 'bold' }}>
+                    <h2 style={styles.textTitle}>
                         Our Services
                     </h2>
                 </div>
@@ -35,8 +64,8 @@ function Services() {
                                     style={{ height: '150px', objectFit: 'cover' }}
                                 />
                                 <div className="card-body">
-                                    <h5 className="card-title" style={{ fontFamily: 'Exo, sans-serif' }}>Service {index + 1}</h5>
-                                    <p className="card-text" style={{ fontFamily: 'Inter, sans-serif', color: '#555' }}>
+                                    <h5 className="card-title" style={styles.cardText}>Service {index + 1}</h5>
+                                    <p className="card-text" style={styles.cardText}>
                                         Brief description of Service {index + 1}.
                                     </p>
                                 </div>
@@ -47,7 +76,7 @@ function Services() {
 
                 {/* Logo Section */}
                 <div className="text-center mb-4">
-                    <h2 style={{ fontFamily: 'Exo, sans-serif', color: 'black', fontSize: '2rem', fontWeight: 'bold' }}>
+                    <h2 style={styles.textTitle}>
                         We Have Worked With
                     </h2>
                 </div>
@@ -71,13 +100,7 @@ function Services() {
                     <div className="row">
                         <div className="col-md-6" style={{ padding: '20px' }}>
                             <div className="text-center mt-5 mb-4">
-                                <h2
-                                    style={{
-                                        fontFamily: 'Exo, sans-serif',
-                                        color: 'black',
-                                        fontSize: '2rem',
-                                        fontWeight: 'bold'
-                                    }}>
+                                <h2 style={styles.textTitle}>
                                     Agriculture Matters to the Future of Development
                                 </h2>
                             </div>
@@ -102,7 +125,7 @@ function Services() {
 
                 {/* Why Choose Us Section */}
                 <div className="text-center mt-5 mb-4">
-                    <h2 style={{ fontFamily: 'Exo, sans-serif', color: 'black', fontSize: '2rem', fontWeight: 'bold' }}>
+                    <h2 style={styles.textTitle}>
                         Why Choose Us
                     </h2>
                 </div>
@@ -117,8 +140,8 @@ function Services() {
                                     style={{ height: '150px', objectFit: 'cover' }}
                                 />
                                 <div className="card-body">
-                                    <h5 className="card-title" style={{ fontFamily: 'Exo, sans-serif' }}>Feature {index + 1}</h5>
-                                    <p className="card-text" style={{ fontFamily: 'Inter, sans-serif', color: '#555' }}>
+                                    <h5 className="card-title" style={styles.cardText}>Feature {index + 1}</h5>
+                                    <p className="card-text" style={styles.cardText}>
                                         Brief description of Feature {index + 1}.
                                     </p>
                                 </div>
@@ -127,8 +150,8 @@ function Services() {
                     ))}
                 </div>
 
-                 {/* Extra Feature Section */}
-                 <Container textAlign="center" className="mb-4">
+                {/* Extra Feature Section */}
+                <Container textAlign="center" className="mb-4">
                     <Grid container spacing={4}>
                         <Grid item xs={12} md={6}>
                             <img
@@ -139,7 +162,7 @@ function Services() {
                             />
                         </Grid>
                         <Grid item xs={12} md={6}>
-                            <Typography variant="h4" component="h4" style={{ fontFamily: 'Exo, sans-serif', marginBottom: '20px' }}>
+                            <Typography variant="h4" component="h4" style={{ fontFamily: 'Poppins, sans-serif', marginBottom: '20px' }}>
                                 Extra Feature Title
                             </Typography>
                             <Typography variant="body1" style={{ marginBottom: '10px' }}>
@@ -174,16 +197,5 @@ function Services() {
         </div>
     );
 }
-
-// Internal CSS styles
-const styles = {
-    logoSection: {
-        position: 'relative',
-        padding: '20px 0',
-        backgroundColor: 'rgba(211, 211, 211, 0.5)', // Light gray background
-        borderRadius: '5px',
-        overflow: 'hidden',
-    },
-};
 
 export default Services;

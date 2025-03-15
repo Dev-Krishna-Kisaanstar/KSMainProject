@@ -1,0 +1,764 @@
+import React, { useEffect, useState } from 'react';
+import { useLocation, useParams } from 'react-router-dom';
+import {
+  Box,
+  Grid,
+  TextField,
+  CircularProgress,
+  Typography,
+  Alert,
+  ToggleButtonGroup,
+  ToggleButton,
+  Button,
+  IconButton,
+  MenuItem,
+  Chip,
+  Select,
+  OutlinedInput,
+} from '@mui/material';
+import { AddLocation, Edit, AddShoppingCart, Save } from '@mui/icons-material';
+import axios from 'axios';
+import Cookies from 'js-cookie';
+import Sidebar from '../../../Sidebars/Advisor/AdvisorMember/AdvisorMemberSidebar';
+import postOfficeData from '../../../Assets/Pincodes/pincodeData.json';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { Refresh } from '@mui/icons-material';
+
+function AdvisorMemberseenewcxdetails() {
+  const location = useLocation();
+  const { mobileNumber } = location.state || {};
+  const { customerId } = useParams();
+
+  // State variables
+  const [customer, setCustomer] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [activeComponent, setActiveComponent] = useState('details');
+  const [isEditableAddress, setIsEditableAddress] = useState(false);
+  const [isEditableFarming, setIsEditableFarming] = useState(false);
+  const [isEditableDetails, setIsEditableDetails] = useState(false);
+
+  const [password, setPassword] = useState(false);
+
+  const [isEditingAddress, setIsEditingAddress] = useState(false);
+  const [isEditingFarming, setIsEditingFarming] = useState(false);
+  const [isEditingDetails, setIsEditingDetails] = useState(false);
+
+  // Address Details State
+  const [addressDetails, setAddressDetails] = useState({
+    village: '',
+    pincode: '',
+    postOffice: '',
+    nearbyLocation: '',
+    taluka: '',
+    district: '',
+    state: '',
+  });
+
+  // Customer details State
+  const [customerDetails, setCustomerDetails] = useState({
+    fullName: '',
+    alternateMobileNumber: '',
+  });
+
+  const [availablePostOffices, setAvailablePostOffices] = useState([]);
+
+  // Farming Details State
+  const [farmingDetails, setFarmingDetails] = useState({
+    totalAcres: '',
+    sourceOfIrrigation: [],
+    landAcquisition: '',
+    kisaanstarInfo: '',
+    crop: [],
+    animalHusbandry: [],
+  });
+
+  const sourceOfIrrigationOptions = [
+    'Bore well', 'Well', 'Canal', 'Farm Pond', 'Lake', 'Dam Water',
+  ];
+
+  const kisaanstarInfoOptions = [
+    'Instagram', 'Website', 'Referral', 'Exhibition', 'WhatsApp',
+    'Google', 'YouTube', 'Campaign', 'Outbound', 'LinkedIn',
+  ];
+
+  const cropOptions = [
+    'Rice', 'Paddy', 'Cotton', 'Gram', 'Black Gram', 'Green Gram',
+    'Tur', 'Pigeonpea', 'Pea', 'Pomegranate', 'Papaya', 'Banana',
+    'Grapes', 'Citrus', 'Custard Apple', 'Strawberry', 'Watermelon',
+    'Muskmelon', 'Mango', 'Apple', 'Oranges', 'Sugarcane',
+    'Tomato', 'Brinjal', 'Chilli', 'Capsicum', 'Carrot', 'Okra',
+    'Potato', 'Sweet Potato', 'Drumstick', 'Rose', 'Cabbage',
+    'Cauliflower', 'Mustard', 'Cucumber', 'Beans', 'Bitter Gourd',
+  ];
+
+  const animalHusbandryOptions = [
+    'Cow', 'Buffalo', 'Pig', 'Donkey',
+  ];
+
+  useEffect(() => {
+    if (mobileNumber) {
+      fetchCustomerDetails(mobileNumber);
+      fetchFarmingDetails();
+    } else {
+      setError('Mobile number is missing. Cannot fetch customer details.');
+    }
+  }, [mobileNumber]);
+
+  const fetchCustomerDetails = async (mobileNumber) => {
+    setLoading(true);
+    setError('');
+    setCustomer(null);
+
+    try {
+      const response = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/advisory-member/search-customer/${mobileNumber}`,
+        { withCredentials: true }
+      );
+
+      if (response.data && response.data.customer) {
+        setCustomer(response.data.customer);
+        setCustomerDetails({
+          fullName: response.data.customer.fullName || '',
+          alternateMobileNumber: response.data.customer.alternateMobileNumber || '',
+          password: response.data.customer.password || '',
+        });
+
+
+        const customerAddress = response.data.address || {};
+
+        setAddressDetails({
+          village: customerAddress.village || '',
+          pincode: customerAddress.pincode || '',
+          postOffice: customerAddress.postOffice || '',
+          nearbyLocation: customerAddress.nearbyLocation || '',
+          taluka: customerAddress.taluka || '',
+          district: customerAddress.district || '',
+          state: customerAddress.state || '',
+        });
+
+        const isAddressEmpty = Object.values(customerAddress).every(field => field.trim() === '');
+        setIsEditableAddress(isAddressEmpty);
+      } else {
+        setError('No customer details found.');
+      }
+    } catch (err) {
+      console.error(err);
+      setError('Failed to load customer details. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchFarmingDetails = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/advisory-member/search-customer/${mobileNumber}`, { withCredentials: true });
+      const fetchedFarmingDetails = response.data.farmingDetails || {};
+      setFarmingDetails(prevDetails => ({
+        ...prevDetails,
+        ...fetchedFarmingDetails,
+      }));
+
+      const isFarmingEmpty = Object.values(fetchedFarmingDetails).every(field => !field || (Array.isArray(field) && field.length === 0));
+      setIsEditableFarming(isFarmingEmpty);
+    } catch (error) {
+      console.error('Error fetching farming details:', error);
+      setError('Failed to fetch farming details.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmitAddress = async () => {
+    setLoading(true);
+    try {
+      await axios.post(`${process.env.REACT_APP_API_URL}/api/advisory-member/add-address/${customerId}`, addressDetails, { withCredentials: true });
+      toast.success('Address saved successfully!');
+      fetchCustomerDetails(mobileNumber); // Refresh customer details
+      setIsEditableAddress(false); // Set to non-editable after saving
+    } catch (error) {
+      console.error('Error saving address:', error);
+      setError('Failed to save address.');
+      toast.error('Failed to save address.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUpdateAddress = async () => {
+    setLoading(true);
+    try {
+      await axios.put(`${process.env.REACT_APP_API_URL}/api/advisory-member/update-address/${customerId}`, addressDetails, { withCredentials: true });
+      toast.success('Address updated successfully!');
+      fetchCustomerDetails(mobileNumber); // Refresh customer details
+      setIsEditableAddress(false); // Set to non-editable after updating
+    } catch (error) {
+      console.error('Error updating address:', error);
+      setError('Failed to update address.');
+      toast.error('Failed to update address.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const toggleEditAddress = () => {
+    if (isEditableAddress) {
+      handleUpdateAddress();
+      setIsEditingAddress(false); // Reset edit mode
+    } else {
+      setIsEditableAddress(true);
+      setIsEditingAddress(true); // Enter edit mode
+    }
+  };
+
+  const handleSubmitCustomerDetails = async () => {
+    setLoading(true);
+    try {
+      await axios.put(
+        `${process.env.REACT_APP_API_URL}/api/advisory-member/update-customer/${customerId}`,
+        customerDetails,
+        { withCredentials: true }
+      );
+      toast.success('Customer details saved successfully!');
+      fetchCustomerDetails(mobileNumber); // Refresh customer details
+      setIsEditableDetails(false);
+    } catch (error) {
+      console.error('Error saving customer details:', error);
+      setError('Failed to save customer details.');
+      toast.error('Failed to save customer details.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleToggleComponent = (event, newComponent) => {
+    if (newComponent) {
+      setActiveComponent(newComponent);
+      if (newComponent === 'addAddress') {
+        // Reset when toggling back to address details
+        setAddressDetails(prev => ({ ...prev, postOffice: '' }));
+      }
+    }
+  };
+
+  const handleChangeAddress = (e) => {
+    const { name, value } = e.target;
+    setAddressDetails((prevDetails) => ({
+      ...prevDetails,
+      [name]: value,
+    }));
+
+    if (name === 'pincode' && value.length === 6) {
+      const matchedPostOffices = postOfficeData[value] || [];
+      setAvailablePostOffices(matchedPostOffices);
+    }
+  };
+
+  const handlePostOfficeChange = (e) => {
+    const selectedPostOffice = e.target.value;
+    const postOfficeDetails = availablePostOffices.find(office => office.officename === selectedPostOffice);
+
+    setAddressDetails((prevDetails) => ({
+      ...prevDetails,
+      postOffice: selectedPostOffice,
+      taluka: postOfficeDetails ? postOfficeDetails.Taluk : '',
+      district: postOfficeDetails ? postOfficeDetails.Districtname : '',
+      state: postOfficeDetails ? postOfficeDetails.statename : '',
+    }));
+  };
+
+  const handleChangeFarming = (e) => {
+    const { name, value } = e.target;
+    setFarmingDetails((prevDetails) => ({
+      ...prevDetails,
+      [name]: value,
+    }));
+  };
+
+  const handleChangeCustomerDetails = (e) => {
+    const { name, value } = e.target;
+    setCustomerDetails((prevDetails) => ({
+      ...prevDetails,
+      [name]: value === 'N/A' ? '' : value,
+    }));
+  };
+
+  const handleSubmitFarmingDetails = async () => {
+    setLoading(true);
+    try {
+      await axios.post(`${process.env.REACT_APP_API_URL}/api/advisory-member/add-farming-details/${customerId}`, farmingDetails, { withCredentials: true });
+      toast.success('Farming details saved successfully!');
+      fetchFarmingDetails(); // Refresh farming details after submission
+      setIsEditableFarming(false);
+    } catch (error) {
+      console.error('Error submitting farming details:', error);
+      setError('Failed to submit farming details.');
+      toast.error('Failed to submit farming details.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUpdateFarmingDetails = async () => {
+    setLoading(true);
+    try {
+      await axios.put(`${process.env.REACT_APP_API_URL}/api/advisory-member/update-farming-details/${customerId}`, farmingDetails, { withCredentials: true });
+      toast.success('Farming details updated successfully!');
+      fetchFarmingDetails(); // Refresh farming details after updating
+      setIsEditableFarming(false); // Set to non-editable after updating
+    } catch (error) {
+      console.error('Error updating farming details:', error);
+      setError('Failed to update farming details.');
+      toast.error('Failed to update farming details.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const toggleEditFarming = () => {
+    if (isEditableFarming) {
+      handleUpdateFarmingDetails();
+      setIsEditingFarming(false); // Reset edit mode
+    } else {
+      setIsEditableFarming(true);
+      setIsEditingFarming(true); // Enter edit mode
+    }
+  };
+
+  const toggleEditDetails = () => {
+    if (isEditableDetails) {
+      handleSubmitCustomerDetails();
+      setIsEditingDetails(false); // Reset edit mode
+    } else {
+      setIsEditableDetails(true);
+      setIsEditingDetails(true); // Enter edit mode
+    }
+  };
+
+  const handleRefresh = async () => {
+    setLoading(true); // Set loading state to true
+    setError(''); // Clear any previous error messages
+    try {
+      const response = await axios.put(
+        `${process.env.REACT_APP_API_URL}/api/advisory-member/regenerate-password/${customerId}`,
+        {}, // Empty object for request body; adjust if needed
+        { withCredentials: true } // Use credentials for cross-site requests
+      );
+
+      // Check for a successful response
+      if (response.status === 200) {
+        // Extract the actual password from the response
+        const newPassword = response.data.actualPassword;
+        setPassword(newPassword); // Update local state with the new password
+        toast.success('Password regenerated successfully!'); // Notify the user of successful regeneration
+        fetchFarmingDetails(); // Optionally refresh farming details after the update
+      } else {
+        setError('Failed to regenerate password.'); // Set error message if response is not successful
+      }
+    } catch (error) {
+      console.error('Error regenerating password:', error); // Log any errors to the console
+      setError('Failed to regenerate password.'); // Set error message for UI
+      toast.error('Failed to regenerate password.'); // Notify the user of the error
+    } finally {
+      setLoading(false); // Reset loading state regardless of success or failure
+    }
+  };
+
+  const yourStyle = { fontFamily: 'Poppins, sans-serif' };
+
+
+  return (
+    <div style={pageStyle}>
+      <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} />
+      <Sidebar />
+      <Box style={{ flex: 1 }} className="p-4 bg-white rounded shadow">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+          <Typography variant="h4" className="text-center" style={yourStyle}>Customer Details</Typography>
+          <IconButton onClick={toggleEditDetails} color="primary">
+            {isEditingDetails ? <Save /> : <Edit />}
+          </IconButton>
+        </div>
+        {loading ? (
+          <CircularProgress color="inherit" sx={{ display: 'block', margin: '0 auto' }} />
+        ) : error ? (
+          <Alert severity="error">{error}</Alert>
+        ) : customer ? (
+          <Grid container spacing={2} style={yourStyle}>
+            <Grid item xs={12} md={6} style={yourStyle}>
+              <Typography variant="h6" className="mb-2" style={{ display: 'flex', alignItems: 'center' }}>
+                Full Name
+              </Typography>
+              <TextField
+                variant="outlined"
+                label="Full Name"
+                fullWidth
+                value={customerDetails.fullName || ''}
+                onChange={handleChangeCustomerDetails}
+                name="fullName"
+                InputProps={{ readOnly: !isEditableDetails }}
+                className="mb-2"
+              />
+              <Typography variant="h6" className="mb-2" style={{ display: 'flex', alignItems: 'center' }}>
+                Alternate Mobile Number
+              </Typography>
+              <TextField
+                variant="outlined"
+                label="Alternate Mobile Number"
+                fullWidth
+                value={customerDetails.alternateMobileNumber || ''}
+                onChange={handleChangeCustomerDetails}
+                name="alternateMobileNumber"
+                InputProps={{ readOnly: !isEditableDetails }}
+                className="mb-2"
+              />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <Typography variant="h6" className="mb-2" style={{ display: 'flex', alignItems: 'center' }}>
+                Mobile Number
+              </Typography>
+              <TextField
+                label="Mobile Number"
+                variant="outlined"
+                fullWidth
+                value={customer.mobileNumber || ''}
+                InputProps={{ readOnly: true }}
+                className="mb-2"
+              />
+              <div>
+                <Typography variant="h6" className="mb-2" style={{ display: 'flex', alignItems: 'center' }}>
+                  Generate Password
+                  <IconButton onClick={handleRefresh} size="small" style={{ marginLeft: '8px' }} disabled={loading}>
+                    <Refresh />
+                  </IconButton>
+                </Typography>
+                <TextField
+                  variant="outlined"
+                  label="Generated Password"
+                  fullWidth
+                  value={password || ''} // Display the regenerated password in the text field
+                  name="password"
+                  InputProps={{ readOnly: true }} // Make the text field read-only
+                  className="mb-2"
+                />
+              </div>
+            </Grid>
+          </Grid>
+        ) : null}
+
+        <Box mt={4}>
+          <ToggleButtonGroup
+            value={activeComponent}
+            exclusive
+            onChange={handleToggleComponent}
+            aria-label="component toggle"
+            fullWidth
+            sx={{ mb: 4 }}
+          >
+            <ToggleButton value="addAddress" aria-label="add address" style={yourStyle}>
+              <AddLocation /> Add Address
+            </ToggleButton>
+            <ToggleButton value="addFarmingDetails" aria-label="add farming details" style={yourStyle}>
+              <AddShoppingCart /> Add Farming Details
+            </ToggleButton>
+          </ToggleButtonGroup>
+        </Box>
+
+        {/* Address Details Section */}
+        {activeComponent === 'addAddress' && (
+          <div>
+            <Typography variant="h6" className="mb-2" style={{ display: 'flex', alignItems: 'center',fontFamily: 'Poppins, sans-serif' }}>
+              Address Details
+              <div style={{ marginLeft: 'auto' }}>
+                <IconButton onClick={toggleEditAddress} color="primary">
+                  {isEditingAddress ? <Save /> : <Edit />}
+                </IconButton>
+              </div>
+            </Typography>
+            <Grid container spacing={2}>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  label="Village"
+                  variant="outlined"
+                  fullWidth
+                  name="village"
+                  value={addressDetails.village}
+                  onChange={handleChangeAddress}
+                  InputProps={{ readOnly: !isEditableAddress }}
+                  className="mb-2"
+                />
+                <TextField
+                  label="Pincode"
+                  variant="outlined"
+                  fullWidth
+                  name="pincode"
+                  value={addressDetails.pincode}
+                  onChange={handleChangeAddress}
+                  InputProps={{ readOnly: !isEditableAddress }}
+                  className="mb-2"
+                />
+                <TextField
+                  label="Post Office"
+                  variant="outlined"
+                  fullWidth
+                  name="postOffice"
+                  value={addressDetails.postOffice}
+                  onChange={handlePostOfficeChange}
+                  select
+                  InputProps={{ readOnly: !isEditableAddress }}
+                  className="mb-2"
+                >
+                  {isEditableAddress ? (
+                    availablePostOffices.length > 0 ? (
+                      availablePostOffices.map((office) => (
+                        <MenuItem key={office.officename} value={office.officename}>
+                          {office.officename}
+                        </MenuItem>
+                      ))
+                    ) : (
+                      <MenuItem disabled>No post offices available</MenuItem>
+                    )
+                  ) : (
+                    <MenuItem value={addressDetails.postOffice} disabled>
+                      {addressDetails.postOffice || 'No post office selected'}
+                    </MenuItem>
+                  )}
+                </TextField>
+                <TextField
+                  label="Taluka"
+                  variant="outlined"
+                  fullWidth
+                  name="taluka"
+                  value={addressDetails.taluka}
+                  onChange={handleChangeAddress}
+                  InputProps={{ readOnly: !isEditableAddress }}
+                  className="mb-2"
+                />
+                <TextField
+                  label="State"
+                  variant="outlined"
+                  fullWidth
+                  name="state"
+                  value={addressDetails.state}
+                  onChange={handleChangeAddress}
+                  InputProps={{ readOnly: !isEditableAddress }}
+                  className="mb-2"
+                />
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  label="Nearby Location"
+                  variant="outlined"
+                  fullWidth
+                  name="nearbyLocation"
+                  value={addressDetails.nearbyLocation}
+                  onChange={handleChangeAddress}
+                  InputProps={{ readOnly: !isEditableAddress }}
+                  className="mb-2"
+                />
+                <TextField
+                  label="District"
+                  variant="outlined"
+                  fullWidth
+                  name="district"
+                  value={addressDetails.district}
+                  onChange={handleChangeAddress}
+                  InputProps={{ readOnly: !isEditableAddress }}
+                  className="mb-2"
+                />
+              </Grid>
+            </Grid>
+            {isEditableAddress && (
+              // Show Save button only when in edit mode
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleSubmitAddress}
+                style={{ marginTop: '16px' }}
+              >
+                Save Address
+              </Button>
+            )}
+          </div>
+        )}
+
+        {/* Farming Details Section */}
+        {activeComponent === 'addFarmingDetails' && (
+          <div>
+            <Typography variant="h6" className="mb-2" style={{ display: 'flex', alignItems: 'center',fontFamily: 'Poppins, sans-serif' }}>
+              Farming Details
+              <div style={{ marginLeft: 'auto' }}>
+                <IconButton onClick={toggleEditFarming} color="primary">
+                  {isEditingFarming ? <Save /> : <Edit />}
+                </IconButton>
+              </div>
+            </Typography>
+            <Grid container spacing={2}>
+              <Grid item xs={12}>
+                <Typography variant="subtitle1">Source of Irrigation</Typography>
+                <Select
+                  fullWidth
+                  multiple
+                  value={farmingDetails.sourceOfIrrigation}
+                  onChange={(e) => {
+                    const {
+                      target: { value },
+                    } = e;
+                    const newValue = typeof value === 'string' ? value.split(',') : value;
+                    setFarmingDetails((prevDetails) => ({
+                      ...prevDetails,
+                      sourceOfIrrigation: newValue,
+                    }));
+                  }}
+                  input={<OutlinedInput />}
+                  renderValue={(selected) => (
+                    <Box display="flex" flexWrap="wrap" gap={0.5}>
+                      {selected.map((value) => (
+                        <Chip key={value} label={value} />
+                      ))}
+                    </Box>
+                  )}
+                  disabled={!isEditableFarming}
+                >
+                  {sourceOfIrrigationOptions.map((option) => (
+                    <MenuItem key={option} value={option}>
+                      {farmingDetails.sourceOfIrrigation.includes(option) ? <strong>{option}</strong> : option}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </Grid>
+
+              <Grid item xs={12}>
+                <TextField
+                  label="Land Acquisition"
+                  variant="outlined"
+                  fullWidth
+                  name="landAcquisition"
+                  value={farmingDetails.landAcquisition}
+                  onChange={handleChangeFarming}
+                  InputProps={{ readOnly: !isEditableFarming }}
+                />
+              </Grid>
+
+              <Grid item xs={12}>
+                <Typography variant="subtitle1">Kisaanstar Info</Typography>
+                <Select
+                  fullWidth
+                  value={farmingDetails.kisaanstarInfo || ''}
+                  onChange={(e) => {
+                    const { value } = e.target;
+                    setFarmingDetails((prevDetails) => ({
+                      ...prevDetails,
+                      kisaanstarInfo: value,
+                    }));
+                  }}
+                  input={<OutlinedInput />}
+                  displayEmpty
+                  disabled={!isEditableFarming}
+                >
+                  {kisaanstarInfoOptions.map((option) => (
+                    <MenuItem key={option} value={option}>
+                      {option}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </Grid>
+
+              <Grid item xs={12}>
+                <Typography variant="subtitle1">Crop</Typography>
+                <Select
+                  fullWidth
+                  multiple
+                  value={farmingDetails.crop}
+                  onChange={(e) => {
+                    const {
+                      target: { value },
+                    } = e;
+                    const newValue = typeof value === 'string' ? value.split(',') : value;
+                    setFarmingDetails((prevDetails) => ({
+                      ...prevDetails,
+                      crop: newValue,
+                    }));
+                  }}
+                  input={<OutlinedInput />}
+                  renderValue={(selected) => (
+                    <Box display="flex" flexWrap="wrap" gap={0.5}>
+                      {selected.map((value) => (
+                        <Chip key={value} label={value} />
+                      ))}
+                    </Box>
+                  )}
+                  disabled={!isEditableFarming}
+                >
+                  {cropOptions.map((option) => (
+                    <MenuItem key={option} value={option}>
+                      {farmingDetails.crop.includes(option) ? <strong>{option}</strong> : option}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </Grid>
+
+              <Grid item xs={12}>
+                <Typography variant="subtitle1">Animal Husbandry</Typography>
+                <Select
+                  fullWidth
+                  multiple
+                  value={farmingDetails.animalHusbandry}
+                  onChange={(e) => {
+                    const {
+                      target: { value },
+                    } = e;
+                    const newValue = typeof value === 'string' ? value.split(',') : value;
+                    setFarmingDetails((prevDetails) => ({
+                      ...prevDetails,
+                      animalHusbandry: newValue,
+                    }));
+                  }}
+                  input={<OutlinedInput />}
+                  renderValue={(selected) => (
+                    <Box display="flex" flexWrap="wrap" gap={0.5}>
+                      {selected.map((value) => (
+                        <Chip key={value} label={value} />
+                      ))}
+                    </Box>
+                  )}
+                  disabled={!isEditableFarming}
+                >
+                  {animalHusbandryOptions.map((option) => (
+                    <MenuItem key={option} value={option}>
+                      {farmingDetails.animalHusbandry.includes(option) ? <strong>{option}</strong> : option}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </Grid>
+            </Grid>
+            {isEditableFarming && (
+              // Show Save button only when in edit mode
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleSubmitFarmingDetails}
+                style={{ marginTop: '16px' }}
+              >
+                Save Farming Details
+              </Button>
+            )}
+          </div>
+        )}
+      </Box>
+      <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} />
+    </div>
+  );
+}
+
+const pageStyle = {
+  backgroundColor: '#1e1e2f',
+  minHeight: '100vh', // Maintained height
+  paddingTop: '65px',
+  width: '100%', // Set width to 100%
+  display: 'flex',
+  flexDirection: 'row',
+};
+
+export default AdvisorMemberseenewcxdetails;

@@ -1,0 +1,400 @@
+import React, { useState, useEffect } from 'react';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import './Login.css';
+import Headerbar from '../Components/SmallComponents/Headerbar';
+import Header from '../Components/SmallComponents/Header';
+import Footer from '../Components/SmallComponents/Footer';
+import Footerbar from '../Components/SmallComponents/Footerbar';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import Cookies from 'js-cookie';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+
+function Login() {
+    const [isSignup, setIsSignup] = useState(false);
+    const [formData, setFormData] = useState({
+        fullName: '',
+        mobileNumber: '',
+        password: '',
+        advisorName: '',
+    });
+    const [error, setError] = useState('');
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const token = Cookies.get('customerSession');
+        if (token) {
+            navigate('/'); // Redirect to dashboard if already logged in
+        }
+    }, [navigate]);
+
+    const toggleForms = () => {
+        setIsSignup(prev => !prev);
+        setFormData({
+            fullName: '',
+            mobileNumber: '',
+            password: '',
+            advisorName: '',
+        });
+        setError('');
+    };
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setError('');
+
+        const endpoint = isSignup ? '/register' : '/login';
+        const body = isSignup
+            ? {
+                fullName: formData.fullName,
+                mobileNumber: formData.mobileNumber,
+                password: formData.password,
+                advisorName: formData.advisorName || 'Registered by self',
+              }
+            : {
+                mobileNumber: formData.mobileNumber,
+                password: formData.password,
+              };
+
+        try {
+            const response = await axios.post(`${process.env.REACT_APP_API_URL}/api/customers${endpoint}`, body, {
+                headers: { 'Content-Type': 'application/json' },
+                withCredentials: true,
+            });
+
+            if (response.status === 201 || response.status === 200) {
+                const message = isSignup ? 'User registered successfully' : 'User logged in successfully';
+                toast.success(message);
+
+                if (!isSignup && response.data.token) {
+                    Cookies.set('customerSession', response.data.token, { expires: 1 / 12 }); // Store for approximately 2 hours
+                    console.log('Token received:', response.data.token);
+                    navigate('/'); // Redirect to the dashboard
+                }
+            }
+        } catch (error) {
+            const message = error.response?.data?.message || 'Network error, please try again.';
+            setError(message);
+            toast.error(message);
+        }
+    };
+
+    return (
+        <div>
+            <Headerbar />
+            <Header />
+            <div className="login-global d-flex align-items-center justify-content-center vh-100">
+                <section className={`login-wrapper ${isSignup ? 'active' : ''} p-5 rounded shadow bg-primary text-white`} style={{ fontFamily: 'Poppins, sans-serif' }}>
+                    <div className="login-form">
+                        <header className="mb-4 cursor-pointer" onClick={toggleForms}>
+                            {isSignup ? 'Switch to Login' : 'Switch to Signup'}
+                        </header>
+                        <form onSubmit={handleSubmit}>
+                            {error && <div className="alert alert-danger">{error}</div>} {/* Error alert */}
+                            {isSignup && (
+                                <input
+                                    type="text"
+                                    className="form-control mb-3"
+                                    placeholder="Full name"
+                                    name="fullName"
+                                    value={formData.fullName}
+                                    onChange={handleChange}
+                                    required
+                                    minLength={7}
+                                    style={{ fontFamily: 'Poppins, sans-serif' }}
+                                />
+                            )}
+                            <input
+                                type="text"
+                                className="form-control mb-3"
+                                placeholder="Mobile number"
+                                name="mobileNumber"
+                                value={formData.mobileNumber}
+                                onChange={handleChange}
+                                required
+                                pattern="\d{10}"
+                                title="Mobile number must be exactly 10 digits."
+                                style={{ fontFamily: 'Poppins, sans-serif' }}
+                            />
+                            <input
+                                type="password"
+                                className="form-control mb-3"
+                                placeholder="Password"
+                                name="password"
+                                value={formData.password}
+                                onChange={handleChange}
+                                required
+                                style={{ fontFamily: 'Poppins, sans-serif' }}
+                            />
+                            {isSignup && (
+                                <input
+                                    type="text"
+                                    className="form-control mb-3"
+                                    placeholder="Advisor name (Optional)"
+                                    name="advisorName"
+                                    value={formData.advisorName}
+                                    onChange={handleChange}
+                                    style={{ fontFamily: 'Poppins, sans-serif' }}
+                                />
+                            )}
+                            <button 
+                                type="submit"
+                                style={{
+                                    display: 'inline-flex',
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    backgroundColor: '#fff',
+                                    color: '#000',
+                                    padding: '10px 20px',
+                                    borderRadius: '5px',
+                                    fontSize: '18px',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    transition: 'background-color 0.3s',
+                                    width: '100%',
+                                    outline: 'none',
+                                    fontFamily: 'Poppins, sans-serif' // Ensure button uses the same font
+                                }}
+                                onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#0056b3'}
+                                onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#fff'}
+                            >
+                                {isSignup ? 'Register' : 'Login'}
+                            </button>
+                        </form>
+                    </div>
+                </section>
+            </div>
+            <Footer />
+            <Footerbar />
+            <ToastContainer />
+        </div>
+    );
+}
+
+export default Login;
+
+
+
+
+
+
+
+
+import React, { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import './Login.css';
+import axios from 'axios';
+import { toast, ToastContainer } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
+import { Button, TextField } from '@mui/material';
+import Cookies from 'js-cookie';
+import Headerbar from '../Components/SmallComponents/Headerbar';
+import Header from '../Components/SmallComponents/Header';
+import Footer from '../Components/SmallComponents/Footer';
+import Footerbar from '../Components/SmallComponents/Footerbar';
+
+
+
+const Login = () => {
+    const navigate = useNavigate();
+    const signUpFormRef = useRef(null);
+
+    const [activeLogin, setActiveLogin] = useState("");
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [fullName, setFullName] = useState("");
+    const [mobileNumber, setMobileNumber] = useState("");
+    const [advisorName, setAdvisorName] = useState("");
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        const token = Cookies.get('customerSession');
+        if (token) {
+            navigate('/'); // Redirect to dashboard if already logged in
+        }
+    }, [navigate]);
+
+    const handleToggleClick = () => {
+        const logincontainer = document.getElementById('logincontainer');
+        logincontainer.classList.toggle('active');
+        setActiveLogin(prev => prev === "operations" ? "advisor" : "operations");
+        setEmail("");
+        setPassword("");
+        setFullName("");
+        setMobileNumber("");
+        setAdvisorName("");
+    };
+
+    const handleSignupSubmit = async () => {
+        setLoading(true);
+        try {
+            const response = await axios.post(
+                `${process.env.REACT_APP_API_URL}/api/customers/register`, // Registration endpoint
+                {
+                    fullName,
+                    mobileNumber,
+                    email,
+                    password,
+                    advisorName
+                }
+            );
+            toast.success(response.data.message);
+            navigate("/"); // Redirect to dashboard after successful registration
+        } catch (error) {
+            toast.error(error.response?.data?.message || "An error occurred");
+        }
+        setLoading(false);
+    };
+
+    const handlePasswordSubmit = async () => {
+        setLoading(true);
+        try {
+            const endpoint = `${process.env.REACT_APP_API_URL}/api/customers/login`;
+            const response = await axios.post(endpoint, { mobileNumber, password }, { withCredentials: true });
+
+            if (response.status === 200 || response.status === 201) {
+                toast.success("User logged in successfully!");
+
+                if (response.data.token) {
+                    Cookies.set('customerSession', response.data.token, { expires: 1 / 12 }); // Store for approximately 2 hours
+                    console.log('Token received:', response.data.token);
+                    navigate('/'); // Redirect to the dashboard
+                }
+            }
+        } catch (error) {
+            toast.error(error.response?.data?.message || "An error occurred");
+        }
+        setLoading(false);
+    };
+
+
+    return (
+        <>
+        <Headerbar />
+        <Header />
+        <div className='body d-flex justify-content-center align-items-center vh-100'>
+            <div className="logincontainer" id="logincontainer">
+                <div className={`form-logincontainer sign-in ${activeLogin === 'operations' ? 'active' : ''} mb-4`}>
+                    <form ref={signUpFormRef} className="d-flex flex-column align-items-center">
+                        <h2 className="text-center">Login In</h2>
+                        <span className="text-center">Enter Your Mobile Number and Password To Login</span>
+                        
+                        <TextField
+                            label="Mobile Number"
+                            variant="outlined"
+                            type="text"
+                            value={mobileNumber}
+                            onChange={(e) => setMobileNumber(e.target.value)}
+                            fullWidth
+                            className="mb-2"
+                        />
+                        <TextField
+                            label="Password"
+                            variant="outlined"
+                            type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            fullWidth
+                            className="mb-2"
+                        />
+                        <Button
+                            variant="contained"
+                            onClick={handlePasswordSubmit}
+                            disabled={loading}
+                            sx={{
+                                mt: 2,
+                                backgroundColor: '#6C584C', // Dark Brown
+                                color: '#F0EAD2',           // Light Cream
+                                '&:hover': { backgroundColor: '#A98467' } // Tan
+                            }}
+                        >
+                            {loading ? "Logging in..." : "Login"}
+                        </Button>
+                    </form>
+                </div>
+
+                <div className={`form-logincontainer sign-up ${activeLogin === 'advisor' ? 'active' : ''} mb-4`}>
+                    <form className="d-flex flex-column align-items-center">
+                        <h2 className="text-center">Sign Up</h2>
+                        <span className="text-center">Create your account</span>
+                        
+                        <TextField
+                            label="Full Name"
+                            variant="outlined"
+                            value={fullName}
+                            onChange={(e) => setFullName(e.target.value)}
+                            fullWidth
+                            className="mb-2"
+                        />
+                        <TextField
+                            label="Mobile Number"
+                            variant="outlined"
+                            value={mobileNumber}
+                            onChange={(e) => setMobileNumber(e.target.value)}
+                            fullWidth
+                            className="mb-2"
+                        />
+                        <TextField
+                            label="Email"
+                            variant="outlined"
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            fullWidth
+                            className="mb-2"
+                        />
+                        <TextField
+                            label="Password"
+                            variant="outlined"
+                            type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            fullWidth
+                            className="mb-2"
+                        />
+                        <Button
+                            variant="contained"
+                            onClick={handleSignupSubmit}
+                            disabled={loading}
+                            sx={{
+                                mt: 2,
+                                backgroundColor: '#6C584C', // Dark Brown
+                                color: '#F0EAD2',           // Light Cream
+                                '&:hover': { backgroundColor: '#A98467' } // Tan
+                            }}
+                        >
+                            {loading ? "Signing up..." : "Sign Up"}
+                        </Button>
+                    </form>
+                </div>
+
+                <div className="toggle-logincontainer text-center">
+                    <div className="toggle">
+                        <div className="toggle-panel toggle-left">
+                            <h2 >Hello, Customer!</h2>
+                            <p >Do you already have an Account? Click on Following Login Button and Login!</p>
+                            <button className="hidden" onClick={handleToggleClick}>Login</button>
+                        </div>
+                        <div className="toggle-panel toggle-right">
+                            <h2 >Hello, Customer!</h2>
+                            <p >Have you Created an Account? If no then please click on below Signin Button and Create an Account to Login!</p>
+                            <button className="hidden" onClick={handleToggleClick}>Signup</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <ToastContainer />
+        </div>
+        <Footer />
+      <Footerbar />
+    </>
+    );
+};
+
+export default Login;

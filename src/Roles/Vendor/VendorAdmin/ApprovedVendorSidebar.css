@@ -1,0 +1,71 @@
+/* ApprovedVendorSidebar.css */
+* {
+    box-sizing: border-box;
+}
+
+:root {
+    --base-color: #c8c1dd;
+}
+
+/* Custom toggle switch */
+.approved-vendor-switch input[type="checkbox"] {
+    height: 0;
+    width: 0;
+    visibility: hidden;
+}
+
+.approved-vendor-switch label {
+    cursor: pointer;
+    position: relative;
+    width: 10em; /* Further reduced width */
+    height: 5em; /* Further reduced height */
+    background: var(--base-color);
+    border-radius: 5em; /* Adjusted for smaller border-radius */
+    display: flex;
+    align-items: center;
+    padding: 1px; /* Reduced padding for smaller toggle */
+    box-shadow: inset -1.5em 1.5em 1em -0.5em #6863ae,
+        inset 0.25em -0.25em 0.5em #e6defe, -0.4em 0.5em 0.25em 0 #ccc7e4,
+        -0.1em 0.05em 0.15em 0 #aaa4d5, 0.1em -0.05em 0.15em 0 #726ca4;
+}
+
+.approved-vendor-switch label:after {
+    content: "";
+    position: absolute;
+    top: 0.15em; /* Adjusted for even smaller position */
+    left: 0.15em; /* Adjusted for even smaller position */
+    width: 4em; /* Further reduced to make smaller */
+    height: 4em; /* Further reduced to make smaller */
+    background: #000;
+    border-radius: 50%; /* Keep it a circle */
+    transition: 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+    background-image: url(https://www.sharetextures.com/wp-content/uploads/2018/09/PBR-concrete_white-ao-.jpg);
+    background-size: 100%; /* Reduced size to fit even smaller */
+    background-position: 50% 50%;
+    filter: drop-shadow(-0.25em 0.15em 0.15em #6863ae);
+}
+
+.approved-vendor-switch label:before {
+    z-index: 1;
+    content: "";
+    position: absolute;
+    top: 0.15em; /* Adjusted for even smaller position */
+    left: 0.15em; /* Adjusted for even smaller position */
+    width: 4em; /* Further reduced to match toggle size */
+    height: 4em; /* Further reduced to match toggle size */
+    border-radius: 50%; /* Keep it a circle */
+    transition: 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+    background: radial-gradient(circle at 70% 35%, #ddd2 20%, #000d);
+    filter: blur(0.2em); /* Further reduced blur */
+}
+
+.approved-vendor-switch input:checked + label:after,
+.approved-vendor-switch input:checked + label:before {
+    left: calc(100% - 0.15em); /* Adjusted to fit the smaller size */
+    transform: translateX(-100%);
+}
+
+.approved-vendor-switch input:checked + label:after {
+    background-position: -100% 50%;
+    filter: drop-shadow(-1em 0.5em 0.15em #6863ae); /* Adjusted shadow */
+}

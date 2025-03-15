@@ -6,12 +6,6 @@ import Header from '../Components/SmallComponents/Header';
 import Footer from '../Components/SmallComponents/Footer';
 import Footerbar from '../Components/SmallComponents/Footerbar';
 import Testimonials from '../Components/SmallComponents/Testimonials'; 
-// import FarmersImage1 from '../Assets/Farmers/farmer1.png'; 
-// import FarmersImage2 from '../Assets/Farmers/farmer2.png'; 
-// import FarmersImage3 from '../Assets/Farmers/farmer3.png'; 
-// import FounderImage from '../Assets/Founders/founder.png'; // Replace with the actual path
-// import CoFounderImage from '../Assets/Founders/cofounder.png'; // Replace with the actual path
-// import ManagerImage from '../Assets/Founders/manager.png'; // Replace with the actual path
 
 const buttonStyles = {
     backgroundColor: 'green',
@@ -19,6 +13,11 @@ const buttonStyles = {
     '&:hover': {
         backgroundColor: 'darkgreen',
     },
+};
+
+const styles = {
+    fontFamily: 'Poppins, sans-serif',
+    color: '#555',
 };
 
 function About() {
@@ -30,10 +29,10 @@ function About() {
             <div className="container">
                 {/* Section Header */}
                 <div className="text-center my-5">
-                    <h2 style={{ fontFamily: 'Exo, sans-serif', color: 'black', fontSize: '2rem', fontWeight: 'bold' }}>
+                    <h2 style={{ ...styles, color: 'black', fontSize: '2rem', fontWeight: 'bold' }}>
                         Get to Know Us
                     </h2>
-                    <p style={{ fontFamily: 'Inter, sans-serif', color: '#555' }}>
+                    <p style={styles}>
                         The Best Agriculture Market
                     </p>
                 </div>
@@ -75,10 +74,10 @@ function About() {
                     {/* Text Section */}
                     <div className="col-md-6">
                         <Box textAlign="left">
-                            <h1 style={{ fontFamily: 'Exo, sans-serif', color: 'black', fontWeight: 'bold', fontSize: '2.5rem' }}>
+                            <h1 style={{ ...styles, color: 'black', fontWeight: 'bold', fontSize: '2.5rem' }}>
                                 The Best Agriculture Market
                             </h1>
-                            <p style={{ fontFamily: 'Inter, sans-serif', color: '#555', lineHeight: '1.6rem' }}>
+                            <p style={{ ...styles, lineHeight: '1.6rem' }}>
                                 There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration. 
                                 There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration 
                                 in some form by injected humor or random words which don't look even.
@@ -104,7 +103,7 @@ function About() {
             {/* Founder, Co-Founder, and Manager Section */}
             <div className="container my-5">
                 <div className="text-center mb-4">
-                    <h2 style={{ fontFamily: 'Exo, sans-serif', color: 'black', fontSize: '2rem', fontWeight: 'bold' }}>
+                    <h2 style={{ ...styles, color: 'black', fontSize: '2rem', fontWeight: 'bold' }}>
                         Meet Our Team
                     </h2>
                 </div>
@@ -117,10 +116,10 @@ function About() {
                             className="img-fluid" 
                             style={{ borderRadius: '10px', objectFit: 'cover', height: '300px' }} 
                         />
-                        <Typography variant="h5" component="h5" style={{ fontFamily: 'Exo, sans-serif', margin: '10px 0', color: 'black' }}>
+                        <Typography variant="h5" component="h5" style={{ ...styles, margin: '10px 0', color: 'black' }}>
                             Founder Name
                         </Typography>
-                        <Typography variant="body2" style={{ fontFamily: 'Inter, sans-serif', color: '#555' }}>
+                        <Typography variant="body2" style={{ ...styles }}>
                             Short description about the founder.
                         </Typography>
                     </div>
@@ -133,10 +132,10 @@ function About() {
                             className="img-fluid" 
                             style={{ borderRadius: '10px', objectFit: 'cover', height: '300px' }} 
                         />
-                        <Typography variant="h5" component="h5" style={{ fontFamily: 'Exo, sans-serif', margin: '10px 0', color: 'black' }}>
+                        <Typography variant="h5" component="h5" style={{ ...styles, margin: '10px 0', color: 'black' }}>
                             Co-Founder Name
                         </Typography>
-                        <Typography variant="body2" style={{ fontFamily: 'Inter, sans-serif', color: '#555' }}>
+                        <Typography variant="body2" style={{ ...styles }}>
                             Short description about the co-founder.
                         </Typography>
                     </div>
@@ -149,10 +148,10 @@ function About() {
                             className="img-fluid" 
                             style={{ borderRadius: '10px', objectFit: 'cover', height: '300px' }} 
                         />
-                        <Typography variant="h5" component="h5" style={{ fontFamily: 'Exo, sans-serif', margin: '10px 0', color: 'black' }}>
+                        <Typography variant="h5" component="h5" style={{ ...styles, margin: '10px 0', color: 'black' }}>
                             Manager Name
                         </Typography>
-                        <Typography variant="body2" style={{ fontFamily: 'Inter, sans-serif', color: '#555' }}>
+                        <Typography variant="body2" style={{ ...styles }}>
                             Short description about the manager.
                         </Typography>
                     </div>
@@ -162,7 +161,7 @@ function About() {
             {/* Video Section with Overlay Text */}
             <div className="container my-5">
                 <div className="text-center mb-4">
-                    <h2 style={{ fontFamily: 'Exo, sans-serif', color: 'black', fontSize: '2rem', fontWeight: 'bold' }}>
+                    <h2 style={{ ...styles, color: 'black', fontSize: '2rem', fontWeight: 'bold' }}>
                         Give Your Plants a New Life with Kisaanstar
                     </h2>
                 </div>
@@ -187,7 +186,7 @@ function About() {
             {/* Meet Our Farmers Section */}
             <div className="container my-5">
                 <div className="text-center mb-4">
-                    <h2 style={{ fontFamily: 'Exo, sans-serif', color: 'black', fontSize: '2rem', fontWeight: 'bold' }}>
+                    <h2 style={{ ...styles, color: 'black', fontSize: '2rem', fontWeight: 'bold' }}>
                         Meet Our Farmers
                     </h2>
                 </div>
@@ -211,10 +210,10 @@ function About() {
                                 zIndex: 1,
                             }}
                         >
-                            <Typography variant="h5" component="h5" style={{ fontFamily: 'Exo, sans-serif', margin: 0, color: 'black' }}>
+                            <Typography variant="h5" component="h5" style={{ ...styles, margin: 0, color: 'black' }}>
                                 Farmer Name 1
                             </Typography>
-                            <Typography variant="body2" style={{ fontFamily: 'Inter, sans-serif', color: '#555' }}>
+                            <Typography variant="body2" style={{ ...styles }}>
                                 Short description about Farmer 1.
                             </Typography>
                         </Box>
@@ -239,10 +238,10 @@ function About() {
                                 zIndex: 1,
                             }}
                         >
-                            <Typography variant="h5" component="h5" style={{ fontFamily: 'Exo, sans-serif', margin: 0, color: 'black' }}>
+                            <Typography variant="h5" component="h5" style={{ ...styles, margin: 0, color: 'black' }}>
                                 Farmer Name 2
                             </Typography>
-                            <Typography variant="body2" style={{ fontFamily: 'Inter, sans-serif', color: '#555' }}>
+                            <Typography variant="body2" style={{ ...styles }}>
                                 Short description about Farmer 2.
                             </Typography>
                         </Box>
@@ -267,10 +266,10 @@ function About() {
                                 zIndex: 1,
                             }}
                         >
-                            <Typography variant="h5" component="h5" style={{ fontFamily: 'Exo, sans-serif', margin: 0, color: 'black' }}>
+                            <Typography variant="h5" component="h5" style={{ ...styles, margin: 0, color: 'black' }}>
                                 Farmer Name 3
                             </Typography>
-                            <Typography variant="body2" style={{ fontFamily: 'Inter, sans-serif', color: '#555' }}>
+                            <Typography variant="body2" style={{ ...styles }}>
                                 Short description about Farmer 3.
                             </Typography>
                         </Box>
