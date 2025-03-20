@@ -19,8 +19,9 @@ import {
 import Sidebar from "../../../Sidebars/Advisor/AdvisorAdmin/AdvisorAdminSidebar";
 import axios from 'axios';
 import { styled } from "@mui/material/styles";
-import Calendar from '../../../Components/Calender/CalenderAA'; // Path to the Calendar component
+import Calendar from '../../../Components/Calender/CalenderAA';
 import { Dashboard as DashboardIcon, Visibility as VisibilityIcon } from '@mui/icons-material';
+import { useNavigate } from "react-router-dom";
 
 // Styled components for Table
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
@@ -75,6 +76,8 @@ function AdvisorAdminAdvisoryOrders() {
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
     const [snackbarSeverity, setSnackbarSeverity] = useState('info');
+
+    const navigate = useNavigate(); // Initialize the useNavigate hook
     
     // Set initial dates to today's date
     const today = new Date().toISOString().split("T")[0];
@@ -83,7 +86,7 @@ function AdvisorAdminAdvisoryOrders() {
         fetchAdvisors(); // Fetch advisors only on mount
         // Fetch today's orders by default
         fetchOrders(today, today);
-    }, []); // Empty dependencies array means this useEffect runs once on mount
+    }, []); 
 
     const fetchAdvisors = async () => {
         try {
@@ -136,6 +139,10 @@ function AdvisorAdminAdvisoryOrders() {
         setSnackbarOpen(false);
     };
 
+    const viewdetails = (id) => {
+        navigate(`/Ordersbyadvisortoadmin/${id}`); // Correctly navigate to the details page with the ID
+    };
+
     const renderOrdersByAdvisor = () => (
         <TableContainer component={Paper} style={{ backgroundColor: '#1E1E2F', backdropFilter: 'blur(5px)', borderRadius: 16, overflow: 'hidden' }}>
             <Table>
@@ -157,7 +164,7 @@ function AdvisorAdminAdvisoryOrders() {
                                 <Button
                                     variant="contained"
                                     style={{ backgroundColor: '#FFA500', color: '#fff' }}
-                                    onClick={() => console.log("View orders for advisor:", advisor._id)}
+                                    onClick={() => viewdetails(advisor._id)} // Call viewdetails with advisor ID
                                 >
                                     <VisibilityIcon style={{ marginRight: 4 }} /> View Orders
                                 </Button>

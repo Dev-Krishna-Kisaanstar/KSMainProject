@@ -93,6 +93,8 @@ import OperationMemberOrders from './Roles/Operations/Operation Member/Operation
 import OppOrders from './Roles/Operations/Operation Admin/Orders'
 import ConfirmOrders from './Roles/Operations/Operation Member/ConfirmOrders';
 import AdvisorIDOrders from './Roles/Operations/Operation Admin/AdvisorIDOrders';
+import Ordersbyadvisortoadmin from './Roles/Advisor/AdvisorAdmin/AdvisorIDOrders';
+import AMAdvisorIDOrders from './Roles/Operations/Operation Member/AdvisorIDOrders';
 
 // Function to get a cookie by name
 const getCookie = (name) => {
@@ -224,6 +226,8 @@ function App() {
             <Route path='/AdvisorMemberList' element={<ProtectedRouteAdmin isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn}><AdvisorMemberList /></ProtectedRouteAdmin>} />
             <Route path='/ToggleLogin/:customerId' element={<ProtectedRouteAdmin isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn}><ToggleLogin /></ProtectedRouteAdmin>} />
             <Route path='/AllAdvisoryOrders' element={<ProtectedRouteAdmin isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn}><AdvisorAdminAdvisoryOrders /></ProtectedRouteAdmin>} />
+            <Route path='/Ordersbyadvisortoadmin/:advisorMemberId' element={<ProtectedRouteAdmin isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn}><Ordersbyadvisortoadmin /></ProtectedRouteAdmin>} />
+
 
             {/* Operation Admin  */}
             <Route path='/OperationAdminDashboard' element={<ProtectedRouteOperationAdmin isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn}><OperationAdminDashboard /></ProtectedRouteOperationAdmin>} />
@@ -231,13 +235,14 @@ function App() {
             <Route path='/OperationMemberList' element={<ProtectedRouteOperationAdmin isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn}><OperationMemberList /></ProtectedRouteOperationAdmin>} />
             <Route path='/OppToggleLogin/:customerId' element={<ProtectedRouteOperationAdmin isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn}><OppToggleLogin /></ProtectedRouteOperationAdmin>} />
             <Route path='/OppAOrders' element={<ProtectedRouteOperationAdmin isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn}><OppOrders /></ProtectedRouteOperationAdmin>} />
-            <Route path='/AdvosorOrders/:customerId' element={<ProtectedRouteOperationAdmin isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn}><AdvisorIDOrders /></ProtectedRouteOperationAdmin>} />
+            <Route path='/AdvosorOrders/:operationalMemberId' element={<ProtectedRouteOperationAdmin isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn}><AdvisorIDOrders /></ProtectedRouteOperationAdmin>} />
 
 
             {/* Operation Member  */}
             <Route path='/OperationMemberDashboard' element={<ProtectedRouteOperationMember isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn}><OperationMemberDashboard /></ProtectedRouteOperationMember>} />
             <Route path='/OppOrders' element={<ProtectedRouteOperationMember isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn}><OperationMemberOrders /></ProtectedRouteOperationMember>} />
             <Route path='/OppOrdersConfirmed' element={<ProtectedRouteOperationMember isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn}><ConfirmOrders /></ProtectedRouteOperationMember>} />
+            <Route path='/AMAdvisorIDOrders/:operationalMemberId' element={<ProtectedRouteOperationMember isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn}><AMAdvisorIDOrders /></ProtectedRouteOperationMember>} />
 
 
 

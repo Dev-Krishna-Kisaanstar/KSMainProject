@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import Sidebar from '../../../Sidebars/Operation/OperationAdmin/OperationAdminSidebar';
+import Sidebar from '../../../Sidebars/Operation/OperationMember/OperationMemberSidebar';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -41,7 +41,7 @@ function AdvisorIDOrders() {
         
         try {
             const response = await axios.post(
-                `${process.env.REACT_APP_API_URL}/api/operational-admin/get-orders/${operationalMemberId}?startDate=${startDate}&endDate=${endDate}`,
+                `${process.env.REACT_APP_API_URL}/api/operational-member/orders/${operationalMemberId}?startDate=${startDate}&endDate=${endDate}`,
                 null,
                 {
                     withCredentials: true,

@@ -10,6 +10,7 @@ import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import { ToastContainer, toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
 
 function OperationMemberOrders() {
     const [activeTab, setActiveTab] = useState(0);
@@ -20,6 +21,7 @@ function OperationMemberOrders() {
     const [selectedEndDate, setSelectedEndDate] = useState('');
     const [ordersFetched, setOrdersFetched] = useState(false);
     const [updatedOrders, setUpdatedOrders] = useState(new Set());
+    const navigate = useNavigate();
 
     const statusOptions = [
         'Order Placed',
@@ -163,6 +165,10 @@ function OperationMemberOrders() {
         saveAs(blob, 'orders.csv');
     };
 
+    const viewdetails = (id) => {
+        navigate(`/AMAdvisorIDOrders/${id}`); // Navigate to the details page with the ID
+      };
+
     const renderOrdersByAdvisor = () => (
         <TableContainer component={Paper} style={{ backgroundColor: '#1E1E2F', backdropFilter: 'blur(5px)', borderRadius: 16, overflow: 'hidden' }}>
             <Table>
@@ -184,7 +190,10 @@ function OperationMemberOrders() {
                                 <Button 
                                     variant="contained" 
                                     style={buttonStyle} 
-                                    onClick={() => console.log("View orders for advisor:", advisor._id)}
+                                    onClick={() => {
+                                        console.log("Navigating to AdvisorIDOrders with ID:", advisor._id); // Log the ID
+                                        viewdetails(advisor._id);
+                                    }}
                                 >
                                     <VisibilityIcon style={{ marginRight: 4 }} /> View Orders
                                 </Button>

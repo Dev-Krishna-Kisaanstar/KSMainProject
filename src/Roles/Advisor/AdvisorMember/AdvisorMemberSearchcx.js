@@ -1,11 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate
-import { Box, TextField, Button, IconButton, InputAdornment, CircularProgress, Alert, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
+import { Box, TextField, Button, IconButton, InputAdornment, Alert, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
 import { Container, Row, Col } from 'react-bootstrap';
-import Cookies from 'js-cookie';
 import axios from 'axios';
 import Sidebar from '../../../Sidebars/Advisor/AdvisorMember/AdvisorMemberSidebar';
-import AdvisorMemberAddCx from './AdvisorMemberAddCx'; // Import Add Customer Component
 import SearchIcon from '@mui/icons-material/Search';
 import TaggingAuth from './Auth/TaggingAuth';
 import SearchBackground from '../../../Assets/Background/Searchcx.webp';
@@ -17,12 +15,10 @@ function AdvisorMemberSearchcx() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [customer, setCustomer] = useState(null);
-  const [showDetails, setShowDetails] = useState(false);
   const navigate = useNavigate(); // Initialize useNavigate
   const [message, setMessage] = useState('');
 
   const handleSearch = async () => {
-    // Trim the mobile number to remove any leading/trailing spaces
     const trimmedMobileNumber = mobileNumber.trim();
 
     // Check if the mobile number is provided
@@ -39,7 +35,6 @@ function AdvisorMemberSearchcx() {
       return;
     }
 
-    // Proceed if the mobile number is valid
     setLoading(true);
     setError('');
     setSuccess('');
@@ -51,27 +46,32 @@ function AdvisorMemberSearchcx() {
         { withCredentials: true }
       );
 
-      if (response.data.message === 'Customer found') {
+      // Check for a successful API response
+      if (response.data.message === 'Customer fetched Successfully') {
         setCustomer(response.data.customer);
         setSuccess('Customer found!');
         setError('');
       } else {
+        // If no customer is found, set error and initiate redirection
         setSuccess('');
         setError('No customer found with the provided number');
-        setCustomer(null); // Clear the customer state when no customer is found
+        setCustomer(null); // Clear customer state when not found
+        navigate('/AdvisorMemberAddCx', { state: { mobileNumber } }); // Redirect immediately
       }
-      setLoading(false);
     } catch (error) {
-      setLoading(false);
       if (error.response) {
         if (error.response.status === 404) {
           setError('Customer not found with the provided number');
+          // Redirect since customer was not found.
+          navigate('/AdvisorMemberAddCx', { state: { mobileNumber } });
         } else {
           setError('Server error. Please try again later.');
         }
       } else {
         setError('Network error. Please check your connection.');
       }
+    } finally {
+      setLoading(false); // Always stop loading in finally block
     }
   };
 
@@ -81,13 +81,8 @@ function AdvisorMemberSearchcx() {
     // Check if the value contains only digits
     if (/^\d*$/.test(value)) {
       setMobileNumber(value);
-      // Regular expression to match exactly 10 digits
       const regex = /^\d{10}$/;
-      if (value.length === 0 || regex.test(value)) {
-        setMessage(value.length === 10 ? 'Mobile number is valid.' : '');
-      } else {
-        setMessage('Mobile number must be exactly 10 digits.');
-      }
+      setMessage(value.length === 10 ? 'Mobile number is valid.' : '');
       setError(''); // Clear error state
       setSuccess(''); // Clear success state
     } else {
@@ -97,26 +92,9 @@ function AdvisorMemberSearchcx() {
     }
   };
 
-  const isValidPhoneNumber = (number) => {
-    return number.length === 10 && !isNaN(number);
-  };
-
-  // Redirect method
-  const handleRedirectToAddCustomer = () => {
-    navigate('/AdvisorMemberAddCx', { state: { mobileNumber } }); // Adjust the path as needed for your routing
-  };
-
-  // Logic for redirecting when no customer found
-  if (!customer && (error === 'No customer found with the provided number' || (error && success === ''))) {
-    handleRedirectToAddCustomer();
-  }
-
-  // Import statements omitted for brevity
-  const handleViewDetails = (customerId, mobileNumber) => {
+  const handleViewDetails = (customerId) => {
     navigate(`/AdvisorMemberseenewcxdetails/${customerId}`, { state: { mobileNumber } });
   };
-
-  const yourStyle = { fontFamily: 'Poppins, sans-serif' };
 
   const pageStyle = {
     display: 'flex',
@@ -222,7 +200,7 @@ function AdvisorMemberSearchcx() {
                           <Button
                             variant="contained"
                             color="secondary"
-                            onClick={() => handleViewDetails(customer._id, customer.mobileNumber)} // Pass mobileNumber here
+                            onClick={() => handleViewDetails(customer._id)} // Passed customer ID to handle view
                           >
                             View Details
                           </Button>

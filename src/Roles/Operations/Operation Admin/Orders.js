@@ -9,7 +9,7 @@ import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import { ToastContainer, toast } from 'react-toastify';
-import { useNavigate  } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 const buttonStyle = {
   backgroundColor: '#3f51b5',
@@ -42,8 +42,9 @@ function OppOrders() {
   useEffect(() => {
     const fetchAdvisors = async () => {
       try {
-        const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/operational-member/all-advisory-members`, { withCredentials: true });
-        setAdvisors(response.data.advisoryMembers);
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/operational-admin/operational-members`, { withCredentials: true });
+        // Adjusting the key here based on the new data shape
+        setAdvisors(response.data.operationalMembers);
       } catch (error) {
         console.error("Error fetching advisors: ", error);
         toast.error('Failed to fetch advisors');
@@ -139,11 +140,14 @@ function OppOrders() {
               <TableCell style={tableCellStyle}>{advisor.officialEmail}</TableCell>
               <TableCell style={tableCellStyle}>
                 <Button 
-                  variant="contained" 
-                  style={buttonStyle} 
-                  onClick={() => viewdetails(advisor._id)}
+                    variant="contained" 
+                    style={buttonStyle} 
+                    onClick={() => {
+                        console.log("Navigating to AdvisorIDOrders with ID:", advisor._id); // Log the ID
+                        viewdetails(advisor._id);
+                    }}
                 >
-                  <VisibilityIcon style={{ marginRight: 4 }} /> View Orders
+                    <VisibilityIcon style={{ marginRight: 4 }} /> View Orders
                 </Button>
               </TableCell>
             </TableRow>
@@ -234,7 +238,7 @@ function OppOrders() {
         <AppBar position="static" style={{ backgroundColor: '#FFA500', borderRadius: '0 0 10px 10px' }}>
           <Tabs value={activeMainTab} onChange={handleMainTabChange} variant="fullWidth">
             <Tab 
-              label={`Orders by Advisor (${advisors.length})`} 
+              label={`Orders by Operation (${advisors.length})`} 
               icon={<DashboardIcon />} 
               style={{ color: activeMainTab === 0 ? '#fff' : '#000' }} 
             />
