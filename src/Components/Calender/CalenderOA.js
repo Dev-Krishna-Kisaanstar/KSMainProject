@@ -46,7 +46,7 @@ const Calendar = ({ onDateSelect }) => {
 
     const fetchOrdersByDateRange = async (start, end) => {
         try {
-            const { data } = await axios.get(`${process.env.REACT_APP_API_URL}/api/advisory-admin/placed-orders?startDate=${start}&endDate=${end}`, { withCredentials: true });
+            const { data } = await axios.get(`${process.env.REACT_APP_API_URL}/api/advisory-admin/placed-orders?startDate=${start}&endDate=${end}`,null, { withCredentials: true });
             setSelectedOrders(data.orders || []);
             // Notify user if no orders are found
             if (!data.orders || data.orders.length === 0) {

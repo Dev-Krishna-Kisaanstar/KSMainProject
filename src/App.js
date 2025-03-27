@@ -95,6 +95,11 @@ import ConfirmOrders from './Roles/Operations/Operation Member/ConfirmOrders';
 import AdvisorIDOrders from './Roles/Operations/Operation Admin/AdvisorIDOrders';
 import Ordersbyadvisortoadmin from './Roles/Advisor/AdvisorAdmin/AdvisorIDOrders';
 import AMAdvisorIDOrders from './Roles/Operations/Operation Member/AdvisorIDOrders';
+import LogisticLogin from './Loginandregistration/LogisticRegisterandLogin/LogisticLogin';
+import LogisticRegister from './Loginandregistration/LogisticRegisterandLogin/LogisticRegister';
+import ProtectedRouteLogisticAdmin from './Roles/Logistic/Auth/ProtectedRoute';
+import LogisticDashboard from './Roles/Logistic/LogisticDashboard';
+import LogisticConfirmOrders from './Roles/Logistic/ConfirmOrders';
 
 // Function to get a cookie by name
 const getCookie = (name) => {
@@ -188,6 +193,8 @@ function App() {
             <Route path='/OperationAdminLogin' element={<OperationAdminLogin />} />
             <Route path='/OperationMemberLogin' element={<OperationMemberLogin />} />
             <Route path='/OperationAdminRegister' element={<OperationAdminRegister />} />
+            <Route path='/LogisticRegister' element={<LogisticRegister />} />
+            <Route path='/LogisticLogin' element={<LogisticLogin />} />
             <Route path='/VendorMemberRegisterRequest' element={<VendorMemberRegisterRequest />} />
             <Route path='/VendorAdminRegister' element={<VendorAdminRegister />} />
             <Route path='/VendorAdminLogin' element={<VendorAdminLogin />} />
@@ -243,6 +250,11 @@ function App() {
             <Route path='/OppOrders' element={<ProtectedRouteOperationMember isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn}><OperationMemberOrders /></ProtectedRouteOperationMember>} />
             <Route path='/OppOrdersConfirmed' element={<ProtectedRouteOperationMember isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn}><ConfirmOrders /></ProtectedRouteOperationMember>} />
             <Route path='/AMAdvisorIDOrders/:operationalMemberId' element={<ProtectedRouteOperationMember isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn}><AMAdvisorIDOrders /></ProtectedRouteOperationMember>} />
+
+            {/* Logistic  */}
+            <Route path='/LogisticDashboard' element={<ProtectedRouteLogisticAdmin isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn}><LogisticDashboard /></ProtectedRouteLogisticAdmin>} />
+            <Route path='/LogisticConfirmOrders' element={<ProtectedRouteLogisticAdmin isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn}><LogisticConfirmOrders /></ProtectedRouteLogisticAdmin>} />
+
 
 
 

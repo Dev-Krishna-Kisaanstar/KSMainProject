@@ -27,9 +27,6 @@ function OperationMemberOrders() {
         'Order Placed',
         'Order Confirmed',
         'Order Cancelled',
-        'Ready to Ship',
-        'Delivered',
-        'Return',
     ];
 
     useEffect(() => {
@@ -57,12 +54,18 @@ function OperationMemberOrders() {
 
     const fetchAllOrders = async (startDate = '', endDate = '') => {
         try {
+            // Fetch all orders based on the provided dates
             const url = `${process.env.REACT_APP_API_URL}/api/advisory-admin/placed-orders?startDate=${startDate}&endDate=${endDate}`;
             const response = await axios.get(url, { withCredentials: true });
-            setOrders(response.data.orders || []);
-            setOrdersFetched(true);
+    
+            // Filter the orders to only include those with status "Order Placed"
+            const filteredOrders = response.data.orders?.filter(order => order.status === "Order Placed") || [];
+    
+            // Store the filtered orders in state
+            setOrders(filteredOrders);
+            setOrdersFetched(true); // Indicate that orders have been fetched
         } catch (error) {
-            console.error("Error fetching orders: ", error);
+            console.error("Error fetching orders: ", error); // Log any errors to the console
         }
     };
 

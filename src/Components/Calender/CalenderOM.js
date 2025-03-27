@@ -46,14 +46,21 @@ const Calendar = ({ onDateSelect }) => {
 
     const fetchOrdersByDateRange = async (start, end) => {
         try {
-            const { data } = await axios.get(`${process.env.REACT_APP_API_URL}/api/advisory-admin/placed-orders?startDate=${start}&endDate=${end}`, { withCredentials: true });
-            setSelectedOrders(data.orders || []);
-            // Notify user if no orders are found
-            if (!data.orders || data.orders.length === 0) {
-                toast.info("No orders found for the selected date range."); 
+            // Fetch the data from the API without a status filter
+            const url = `${process.env.REACT_APP_API_URL}/api/advisory-admin/placed-orders?startDate=${start}&endDate=${end}`;
+            const { data } = await axios.get(url, { withCredentials: true });
+    
+            // Filter the orders to only include those with status "Order Placed"
+            const filteredOrders = data.orders?.filter(order => order.status === "Order Placed") || [];
+            setSelectedOrders(filteredOrders);
+    
+            // Notify the user if no orders are found
+            if (filteredOrders.length === 0) {
+                toast.info("No orders with the status 'Order Placed' found for the selected date range.");
             }
         } catch (error) {
-            toast.error("Failed to fetch orders.");
+            console.error("Failed to fetch orders:", error);  // Log the error for debugging
+            toast.error("Failed to fetch orders. Please try again.");
         }
     };
 
