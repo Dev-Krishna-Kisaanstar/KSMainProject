@@ -1,27 +1,82 @@
 import React from 'react';
 
+// Function to convert numbers to words
+const numberToWords = (num) => {
+  if (num === 0) return 'zero rupees';
+
+  const belowTwenty = [
+    'zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine',
+    'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'
+  ];
+
+  const belowHundred = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+  const aboveHundred = ['thousand', 'million', 'billion'];
+
+  const parseNumber = (n) => {
+    const words = [];
+    if (n >= 100) {
+      const hundreds = Math.floor(n / 100);
+      words.push(belowTwenty[hundreds], 'hundred');
+      n %= 100;
+    }
+    if (n >= 20) {
+      const tens = Math.floor(n / 10);
+      words.push(belowHundred[tens]);
+      n %= 10;
+    }
+    if (n > 0) {
+      words.push(belowTwenty[n]);
+    }
+    return words.join(' ');
+  };
+
+  const scaleNumbers = (n) => {
+    if (n === 0) return 'zero';
+    let scale = 0;
+    const words = [];
+    while (n > 0) {
+      const segment = n % 1000;
+      if (segment > 0) {
+        const segmentWords = parseNumber(segment);
+        if (scale > 0) {
+          words.unshift(segmentWords + ' ' + aboveHundred[scale - 1]);
+        } else {
+          words.unshift(segmentWords);
+        }
+      }
+      n = Math.floor(n / 1000);
+      scale++;
+    }
+    return words.join(' ');
+  };
+
+  return scaleNumbers(num).trim() + ' rupees';
+};
+
 const BillFormat = ({
-  amount,
-  customerCareNo,
-  weight,
+  finalAmount,
   orderId,
-  contractId,
-  customerId,
-  contractPersonId,
   productName,
-  totalAmountWords,
-  senderName,
-  senderContact,
-  senderAddress,
-  senderCity,
-  senderPincode,
-  receiverName,
-  receiverContact,
-  receiverAddress,
-  receiverCity,
-  receiverPincode,
-  barcode
+  customerName,
+  customerMobile,
+  Address
 }) => {
+  // Convert amount to words
+  const totalAmountWords = numberToWords(finalAmount);
+
+  // Static Information
+  const senderDetails = {
+    name: "KisaanStar Solutions Pvt. Ltd",
+    contactNumber: "+918830385928",
+    address: "4th floor office No 401, Vishwakarma Pride IT park, Nagar Rd, near hp petrol pump, Wagholi, Pune, Maharashtra 412207",
+    city: "Pune",
+    pincode: "412207",
+    customerCareNo: "+918830385928",
+    contractPersonId: "0000111716",
+    contractId: "40229906",
+    customerId: "0000070327"
+  };
+
   const styles = {
     container: {
       fontFamily: 'Poppins, sans-serif',
@@ -33,7 +88,7 @@ const BillFormat = ({
       textAlign: 'center',
       fontWeight: 'bold',
       margin: '10px 0',
-      fontSize: '24px',  // Increased font size for the header
+      fontSize: '24px',
     },
     table: {
       width: '100%',
@@ -70,6 +125,9 @@ const BillFormat = ({
       border: 'none',
       borderRadius: '5px',
     },
+    colWidth: {
+      width: '50%', // Set equal width for both From and To columns
+    },
   };
 
   const handlePrint = () => {
@@ -82,6 +140,7 @@ const BillFormat = ({
             body {
               font-family: 'Poppins, sans-serif';
               padding: 20px;
+              margin: 0;
             }
             table {
               width: 100%;
@@ -96,7 +155,29 @@ const BillFormat = ({
             h2 {
               text-align: center;
               margin: 10px 0;
-              font-size: 24px;  // Match the size of the header
+              font-size: 24px;
+            }
+            .header {
+              text-align: center;
+              font-weight: bold;
+              margin: 10px 0;
+              font-size: 24px;
+            }
+            .bold {
+              font-weight: bold;
+            }
+            .center {
+              text-align: center;
+            }
+            .barcode {
+              font-family: monospace;
+              font-size: 18px;
+            }
+            .largeCell {
+              height: 80px;
+            }
+            .colWidth {
+              width: 50%; /* Equal width for From and To columns */
             }
           </style>
         </head>
@@ -104,60 +185,72 @@ const BillFormat = ({
           <table>
             <tbody>
               <tr>
-                <td colspan="2" style="text-align: center; font-weight: bold; font-size: 24px;">Business parcel cash on delivery</td>
+                <td colspan="2" class="header">Business Parcel Cash on Delivery</td>
               </tr>
               <tr>
-                <td>For Rs : ${amount}</td>
-                <td>Customer Care No: ${customerCareNo}</td>
+                <td><b>For Rs:</b> ${finalAmount}</td>
+                <td><b>Customer Care No:</b> ${senderDetails.customerCareNo}</td>
               </tr>
               <tr>
-                <td>Weight: ${weight}</td>
-                <td>KS Order ID: ${orderId}</td>
+                <td><b>Weight:</b></td>
+                <td></td>
               </tr>
               <tr>
-                <td><strong>Contract ID: ${contractId}</strong></td>
-                <td><strong>Customer -Id: ${customerId}</strong></td>
+                <td><b>KS Order ID:</b> ${orderId}</td>
+                <td></td>
               </tr>
               <tr>
-                <td><strong>Contract Person ID: ${contractPersonId}</strong></td>
-                <td>${productName}</td>
+                <td class="bold">Contract ID: ${senderDetails.contractId}</td>
+                <td class="bold">Customer ID: ${senderDetails.customerId}</td>
               </tr>
               <tr>
-                <td colSpan="2">Rupees: ${totalAmountWords}</td>
+                <td class="bold">Contract Person ID: ${senderDetails.contractPersonId}</td>
+                <td><b>Product Name:</b> ${productName}</td>
               </tr>
               <tr>
-                <td class="${styles.center.className}" colSpan="1">Business parcel cash on delivery</td>
-                <td class="${styles.center.className}" colSpan="1">
-                  <div style="${styles.barcode}">${barcode}</div>
+                <td class="bold center" colSpan="2">Rupees: ${totalAmountWords}</td>
+              </tr>
+              <tr>
+                <td class="center largeCell" colSpan="1"><b>Business Parcel Cash on Delivery</b></td>
+                <td class="center largeCell" colSpan="1">
+                  <div class="barcode"></div>
                 </td>
               </tr>
               <tr>
                 <td colSpan="2">
-                  <table>
+                  <table style="width: 100%; border-collapse: collapse;">
                     <tbody>
                       <tr>
-                        <td><strong>From</strong></td>
-                        <td><strong>To</strong></td>
+                        <td class="colWidth"><strong>From:</strong></td>
+                        <td class="colWidth"><strong>To:</strong></td>
                       </tr>
                       <tr>
-                        <td>Name: ${senderName}</td>
-                        <td>Name: ${receiverName}</td>
+                        <td><b>Name:</b> ${senderDetails.name}</td>
+                        <td><b>Name:</b> ${customerName}</td>
                       </tr>
                       <tr>
-                        <td>Contact Number: ${senderContact}</td>
-                        <td>Contact Number: ${receiverContact}</td>
+                        <td><b>Contact Number:</b> ${senderDetails.contactNumber}</td>
+                        <td><b>Contact Number:</b> ${customerMobile}</td>
                       </tr>
                       <tr>
-                        <td>Address: ${senderAddress}</td>
-                        <td>Address: ${receiverAddress}</td>
+                        <td><b>Address:</b> ${senderDetails.address}</td>
+                        <td>
+                          <strong>Address:</strong><br />
+                          <strong>At/Post:</strong> ${Address.postOffice}<br />
+                          <strong>Village:</strong> ${Address.village}<br />
+                          <strong>Taluka:</strong> ${Address.taluka}<br />
+                          <strong>District:</strong> ${Address.district}<br />
+                          <strong>Pincode:</strong> ${Address.pincode}<br />
+                          <strong>Nearby Location:</strong> ${Address.nearbyLocation}
+                        </td>
                       </tr>
                       <tr>
-                        <td>City: ${senderCity}</td>
-                        <td>City: ${receiverCity}</td>
+                        <td><b>City:</b> ${senderDetails.city}</td>
+                        <td><b>City:</b> ${Address.district}</td>
                       </tr>
                       <tr>
-                        <td>Pincode: ${senderPincode}</td>
-                        <td>Pincode: ${receiverPincode}</td>
+                        <td><b>Pincode:</b> ${senderDetails.pincode}</td>
+                        <td><b>Pincode:</b> ${Address.pincode}</td>
                       </tr>
                     </tbody>
                   </table>
@@ -170,13 +263,13 @@ const BillFormat = ({
     `);
     printWindow.document.close();
     printWindow.print();
-  };
+};
 
   const handleShare = () => {
     const shareData = {
       title: 'Order Details',
-      text: `Order ID: ${orderId}\nAmount: ${amount}\nFrom: ${senderName}\nTo: ${receiverName}`,
-      url: window.location.href, // Use the current page URL.
+      text: `Order ID: {orderId}\nAmount: {finalAmount}\nFrom: {senderDetails.name}\nTo: {customerName}`,
+      url: window.location.href,
     };
 
     if (navigator.share) {
@@ -184,90 +277,106 @@ const BillFormat = ({
         .then(() => console.log('Share successful'))
         .catch((error) => console.error('Error sharing:', error));
     } else {
-      // Fallback for browsers that do not support the Web Share API.
-      const mailtoLink = `mailto:?subject=Order Details&body=${encodeURIComponent(JSON.stringify(shareData, null, 2))}`;
+      const mailtoLink = `mailto:?subject=Order Details&body={encodeURIComponent(JSON.stringify(shareData, null, 2))}`;
       window.location.href = mailtoLink;
     }
   };
 
   return (
     <div style={styles.container}>
-      <table style={styles.table}>
-        <tbody>
-          <tr>
-            <td colSpan="2" style={{ ...styles.td, ...styles.center, ...styles.header }}>
-              <strong>Business parcel cash on delivery</strong>
-            </td>
-          </tr>
-          <tr>
-            <td style={styles.td}>For Rs : {amount}</td>
-            <td style={styles.td}>Customer Care No: {customerCareNo}</td>
-          </tr>
-          <tr>
-            <td style={styles.td}>Weight: {weight}</td>
-            <td style={styles.td}>KS Order ID: {orderId}</td>
-          </tr>
-          <tr>
-            <td style={{ ...styles.td, ...styles.bold }}>Contract ID: {contractId}</td>
-            <td style={{ ...styles.td, ...styles.bold }}>Customer -Id: {customerId}</td>
-          </tr>
-          <tr>
-            <td style={{ ...styles.td, ...styles.bold }}>Contract Person ID: {contractPersonId}</td>
-            <td style={styles.td}>{productName}</td>
-          </tr>
-          <tr>
-            <td style={styles.td} colSpan="2">Rupees: {totalAmountWords}</td>
-          </tr>
-          <tr>
-            <td style={{ ...styles.td, ...styles.center, ...styles.largeCell }} colSpan="1">Business parcel cash on delivery</td>
-            <td style={{ ...styles.td, ...styles.center, ...styles.largeCell }} colSpan="1">
-              <div style={styles.barcode}>{barcode}</div>
-            </td>
-          </tr>
-          <tr>
-            <td style={styles.td} colSpan="2">
-              <table style={styles.table}>
-                <tbody>
-                  <tr>
-                    <td style={styles.td}><strong>From</strong></td>
-                    <td style={styles.td}><strong>To</strong></td>
-                  </tr>
-                  <tr>
-                    <td style={styles.td}>Name: {senderName}</td>
-                    <td style={styles.td}>Name: {receiverName}</td>
-                  </tr>
-                  <tr>
-                    <td style={styles.td}>Contact Number: {senderContact}</td>
-                    <td style={styles.td}>Contact Number: {receiverContact}</td>
-                  </tr>
-                  <tr>
-                    <td style={styles.td}>Address: {senderAddress}</td>
-                    <td style={styles.td}>Address: {receiverAddress}</td>
-                  </tr>
-                  <tr>
-                    <td style={styles.td}>City: {senderCity}</td>
-                    <td style={styles.td}>City: {receiverCity}</td>
-                  </tr>
-                  <tr>
-                    <td style={styles.td}>Pincode: {senderPincode}</td>
-                    <td style={styles.td}>Pincode: {receiverPincode}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+    <table style={styles.table}>
+      <tbody>
+        <tr>
+          <td colSpan="2" style={{ ...styles.td, ...styles.center, ...styles.header }}>
+            <strong>Business Parcel Cash on Delivery</strong>
+          </td>
+        </tr>
+        <tr>
+          <td style={styles.td}><b>For Rs:</b> {finalAmount}</td>
+          <td style={styles.td}><b>Customer Care No:</b> {senderDetails.customerCareNo}</td>
+        </tr>
+        <tr>
+          <td style={styles.td}><b>Weight:</b></td>
+          <td style={styles.td}><b>KS Order ID:</b> {orderId}</td>
+        </tr>
+        <tr>
+          <td style={{ ...styles.td, ...styles.bold }}>Contract ID: {senderDetails.contractId}</td>
+          <td style={{ ...styles.td, ...styles.bold }}>Customer ID: {senderDetails.customerId}</td>
+        </tr>
+        <tr>
+          <td style={{ ...styles.td, ...styles.bold }}>Contract Person ID: {senderDetails.contractPersonId}</td>
+          <td style={styles.td}><b>Product Name:</b> {productName}</td>
+        </tr>
+        <tr>
+  <td style={{ ...styles.td, textAlign: 'center' }} colSpan="2"><b>Rupees: {totalAmountWords}</b></td>
+</tr>
+        <tr>
+          <td style={{ ...styles.td, ...styles.center, ...styles.largeCell }} colSpan="1"><b>Business Parcel Cash on Delivery</b></td>
+          <td style={{ ...styles.td, ...styles.center, ...styles.largeCell }} colSpan="1">
+            <div style={styles.barcode}></div>
+          </td>
+        </tr>
+        <tr>
+          <td colSpan="2">
+            <table style={styles.table}>
+              <tbody>
+                <tr>
+                  <td style={{ ...styles.td, ...styles.colWidth }}><strong>From:</strong></td>
+                  <td style={{ ...styles.td, ...styles.colWidth }}><strong>To:</strong></td>
+                </tr>
+                <tr>
+                  <td style={styles.td}><b>Name:</b> {senderDetails.name}</td>
+                  <td style={styles.td}><b>Name:</b> {customerName}</td>
+                </tr>
+                <tr>
+                  <td style={styles.td}><b>Contact Number:</b> {senderDetails.contactNumber}</td>
+                  <td style={styles.td}><b>Contact Number:</b> {customerMobile}</td>
+                </tr>
+                <tr>
+                  <td style={styles.td}>
+                    <b>Address:</b><br />
+                    <strong>At/Post:</strong> {Address.postOffice}<br />
+                    <strong>Village:</strong> {Address.village}<br />
+                    <strong>Taluka:</strong> {Address.taluka}<br />
+                    <strong>District:</strong> {Address.district}<br />
+                    <strong>Pincode:</strong> {Address.pincode}<br />
+                    <strong>Nearby Location:</strong> {Address.nearbyLocation}
+                  </td>
+                  <td style={styles.td}>
+                    <strong>Address:</strong><br />
+                    <strong>At/Post:</strong> {Address.postOffice}<br />
+                    <strong>Village:</strong> {Address.village}<br />
+                    <strong>Taluka:</strong> {Address.taluka}<br />
+                    <strong>District:</strong> {Address.district}<br />
+                    <strong>Pincode:</strong> {Address.pincode}<br />
+                    <strong>Nearby Location:</strong> {Address.nearbyLocation}
+                  </td>
+                </tr>
+                <tr>
+                  <td style={styles.td}><b>City:</b> {senderDetails.city}</td>
+                  <td style={styles.td}><b>City:</b> {Address.district}</td>
+                </tr>
+                <tr>
+                  <td style={styles.td}><b>Pincode:</b> {senderDetails.pincode}</td>
+                  <td style={styles.td}><b>Pincode:</b> {Address.pincode}</td>
+                </tr>
+              </tbody>
+            </table>
+          </td>
+        </tr>
+      </tbody>
+    </table>
 
-      <div style={styles.buttonContainer}>
-        <button style={{ ...styles.button, backgroundColor: 'lightblue' }} onClick={handlePrint}>
-          Print
-        </button>
-        <button style={{ ...styles.button, backgroundColor: 'lightgreen' }} onClick={handleShare}>
-          Share
-        </button>
-      </div>
+    <div style={styles.buttonContainer}>
+      <button style={{ ...styles.button, backgroundColor: 'lightblue' }} onClick={handlePrint}>
+        Print
+      </button>
+      <button style={{ ...styles.button, backgroundColor: 'lightgreen' }} onClick={handleShare}>
+        Share
+      </button>
     </div>
+  </div>
+
   );
 };
 

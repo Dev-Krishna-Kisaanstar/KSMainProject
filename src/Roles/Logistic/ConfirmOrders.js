@@ -3,7 +3,7 @@ import axios from 'axios';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
-import { Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Modal, Typography } from '@mui/material';
+import { Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Typography } from '@mui/material';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import jsPDF from 'jspdf';
@@ -13,6 +13,7 @@ import { saveAs } from 'file-saver';
 import { CalendarToday } from '@mui/icons-material';
 import Sidebar from '../../Sidebars/Logistic/LogisticSidebar';
 import BillFormat from '../../Components/BillingForLogistics'; // Adjust the import path based on your file structure
+import Modal from '@mui/material/Modal';
 
 const ConfirmOrders = () => {
     const [selectedOrders, setSelectedOrders] = useState([]);
@@ -145,8 +146,10 @@ const ConfirmOrders = () => {
     };
 
     const handleDispatchClick = (order) => {
-        setCurrentOrder(order); 
-        setIsDispatchModalOpen(true); 
+        if (order) {
+            setCurrentOrder(order);
+            setIsDispatchModalOpen(true);
+        }
     };
 
     return (
@@ -232,16 +235,35 @@ const ConfirmOrders = () => {
                     </Box>
                 </Modal>
 
-                {/* Dispatch Modal */}
                 <Modal open={isDispatchModalOpen} onClose={() => setIsDispatchModalOpen(false)}>
-                    <Box p={4} bgcolor="white" color="black" width={1200} height={800} mx="auto" mt={10} borderRadius={3} boxShadow={3} overflow="auto">
-                        <Typography variant="h6" textAlign="center" mb={2} color="primary">
-                            Dispatch Bill
-                        </Typography>
-                        {currentOrder && <BillFormat order={currentOrder} />} 
-                        <Button variant="contained" color="error" fullWidth sx={{ mt: 2, borderRadius: 2 }} onClick={() => setIsDispatchModalOpen(false)}>Close</Button>
-                    </Box>
-                </Modal>
+    {currentOrder ? (
+        <Box p={4} bgcolor="white" color="black" width={1200} height={1000} mx="auto" mt={10} borderRadius={3} boxShadow={3} overflow="auto">
+            <Typography variant="h6" textAlign="center" mb={2} color="primary">
+                Dispatch Bill
+            </Typography>
+
+            <BillFormat
+                finalAmount={currentOrder.totalAmount}
+                orderId={currentOrder.orderId}
+                productName={currentOrder.products[0]?.productName || "Not Available"}
+                customerName={currentOrder.customerName || "Not Available"}
+                customerMobile={currentOrder.customerMobile || "Not Available"}
+                Address={{
+                    pincode: currentOrder.pincode || "Not Available",
+                    village: currentOrder.village || "Not Available",
+                    taluka: currentOrder.taluka || "Not Available",
+                    district: currentOrder.district || "Not Available",
+                    nearbyLocation: currentOrder.nearbyLocation || "Not Available", // Or make this also optional
+                    postOffice: currentOrder.postOffice || "Not Available" // Or make this also optional
+                }}
+            />
+
+            <Button variant="contained" color="error" fullWidth sx={{ mt: 2, borderRadius: 2 }} onClick={() => setIsDispatchModalOpen(false)}>Close</Button>
+        </Box>
+    ) : (
+        <Typography variant="h6" textAlign="center" color="red">No Order Details Available</Typography>
+    )}
+</Modal>
             </div>
         </>
     );
