@@ -6,43 +6,40 @@ import {
   Typography,
   IconButton,
   MenuItem,
-  Snackbar,
   Paper,
   Divider,
   Grid,
-  Tooltip
+  Modal,
+  Checkbox,
+  Tooltip,
 } from "@mui/material";
-import DeleteIcon from "@mui/icons-material/Delete";
-import AddCircleIcon from "@mui/icons-material/AddCircle";
 import LocalOfferIcon from "@mui/icons-material/LocalOffer";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
-import Autocomplete from '@mui/material/Autocomplete';
 import ClearIcon from '@mui/icons-material/Clear';
 
-
 const PlaceOrder = ({ customerId, advisorId }) => {
-  const [products, setProducts] = useState([{ productId: "", quantity: 1 }]);
   const [subtotal, setSubtotal] = useState(0);
   const [finalPrice, setFinalPrice] = useState(0);
   const [discount, setDiscount] = useState(0);
   const [productOptions, setProductOptions] = useState([]);
   const [coupons, setCoupons] = useState([]);
   const [selectedCoupon, setSelectedCoupon] = useState("");
-  const [error, setError] = useState("");
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [checkedProducts, setCheckedProducts] = useState({});
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/vendor-admin/products`, {
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/advisory-member/get-products`, {
           withCredentials: true,
         });
-        if (Array.isArray(response.data.products)) {
-          setProductOptions(response.data.products);
+        if (Array.isArray(response.data.approvedProducts)) {
+          setProductOptions(response.data.approvedProducts);
         } else {
           throw new Error("Unexpected response structure");
         }
@@ -72,32 +69,49 @@ const PlaceOrder = ({ customerId, advisorId }) => {
   }, []);
 
   useEffect(() => {
-    const calculatedSubtotal = products.reduce((sum, product) => sum + (product.price * product.quantity || 0), 0);
+    const calculatedSubtotal = Object.keys(checkedProducts).reduce((sum, key) => {
+      const product = productOptions.find(p => p._id === key);
+      if (product && checkedProducts[key]) {
+        return sum + (product.MRP * checkedProducts[key]);
+      }
+      return sum;
+    }, 0);
+
     const discountAmount = selectedCoupon ? coupons.find(c => c.code === selectedCoupon)?.discountAmount || 0 : 0;
     setSubtotal(calculatedSubtotal);
     setDiscount(discountAmount);
     setFinalPrice(Math.max(0, calculatedSubtotal - discountAmount));
-  }, [products, selectedCoupon]);
+  }, [checkedProducts, selectedCoupon, productOptions, coupons]);
 
-  const handleProductChange = (index, value) => {
-    const newProducts = [...products];
-    newProducts[index].productId = value ? value._id : "";
-    newProducts[index].price = value ? Number(value.productBasedPrice) : 0;
-    setProducts(newProducts);
+  const handleCheckboxChange = (productId) => {
+    setCheckedProducts(prev => ({
+      ...prev,
+      [productId]: prev[productId] ? 0 : 1 // Default quantity is 1 when checked
+    }));
   };
 
-  const handleQuantityChange = (index, value) => {
-    const newProducts = [...products];
-    newProducts[index].quantity = value >= 1 ? value : 1;
-    setProducts(newProducts);
+  const handleViewDetails = (product) => {
+    setSelectedProduct(product);
+    setModalOpen(true);
   };
 
-  const addProduct = () => {
-    setProducts([...products, { productId: "", quantity: 1 }]);
+  const handleModalClose = () => {
+    setModalOpen(false);
+    setSelectedProduct(null);
   };
 
-  const deleteProduct = (index) => {
-    setProducts(products.filter((_, i) => i !== index));
+  const incrementQuantity = (productId) => {
+    setCheckedProducts((prev) => ({
+      ...prev,
+      [productId]: prev[productId] ? prev[productId] + 1 : 1,
+    }));
+  };
+
+  const decrementQuantity = (productId) => {
+    setCheckedProducts((prev) => ({
+      ...prev,
+      [productId]: prev[productId] > 1 ? prev[productId] - 1 : prev[productId],
+    }));
   };
 
   const placeOrder = async () => {
@@ -106,20 +120,20 @@ const PlaceOrder = ({ customerId, advisorId }) => {
       return;
     }
 
-    const orders = products.map(product => ({
-      productId: product.productId,
-      quantity: product.quantity,
+    const orders = Object.keys(checkedProducts).map(productId => ({
+      productId,
+      quantity: checkedProducts[productId],
     }));
 
-    if (orders.some(order => !order.productId)) {
+    if (orders.some(order => order.quantity <= 0)) {
       toast.error("Please select a product for all items.");
       return;
     }
 
     const dataToSend = {
       customerId,
-      paymentMethod: "COD", // Assuming COD
-      transactionId: null, // Assuming no transaction ID for COD
+      paymentMethod: "COD",
+      transactionId: null,
       couponCode: selectedCoupon || "",
       orders,
     };
@@ -129,14 +143,12 @@ const PlaceOrder = ({ customerId, advisorId }) => {
       const response = await axios.post(
         `${process.env.REACT_APP_API_URL}/api/orders/place-by-advisor`,
         dataToSend,
-        {
-          withCredentials: true,
-        }
+        { withCredentials: true }
       );
 
       if (response.data.message === "Orders processed") {
         toast.success("Order placed successfully!");
-        setProducts([{ productId: "", quantity: 1 }]); // Clear products after successful order
+        setCheckedProducts({});
         setSelectedCoupon("");
       } else {
         toast.error(response.data.message || "Failed to place order.");
@@ -149,262 +161,325 @@ const PlaceOrder = ({ customerId, advisorId }) => {
     }
   };
 
-
   return (
-    <Box 
-    sx={{
-      padding: 4, 
-      backgroundColor: "#0F1535", // Set the background color
-      borderRadius: 3, 
-      boxShadow: 3, 
-      mt: 4,
-      position: 'relative',
-      overflow: 'hidden',
-      background: 'rgba(15, 21, 53, 0.7)', // Semi-transparent background color
-      backdropFilter: 'blur(10px)', // Glass effect (blurred background)
-    }}
-  >
-    <ToastContainer />
-    <Typography 
-      variant="h4" 
-      sx={{ 
-        color: "#ffffff", // White color for the text to contrast with the dark background
-        mb: 3, 
-        textAlign: "center", 
-        fontWeight: "bold" 
-      }}
-    >
-      <ShoppingCartIcon sx={{ fontSize: 40, verticalAlign: "middle", color: "green" }} /> Place Order
-    </Typography>
-    <Paper 
-      elevation={3} 
+    <Box
       sx={{
-        padding: 3, 
-        borderRadius: 2,
-        backgroundColor: "rgba(255, 255, 255, 0.1)", // Slightly transparent background for the paper element
-        backdropFilter: 'blur(5px)', // Applying some blur for the paper to blend with the glass effect
+        padding: 4,
+        backgroundColor: "#0F1535",
+        borderRadius: 3,
+        boxShadow: 3,
+        mt: 4,
+        position: 'relative',
+        overflow: 'hidden',
+        background: 'rgba(15, 21, 53, 0.7)',
+        backdropFilter: 'blur(10px)',
       }}
     >
-      <TextField 
-  select 
-  label="Coupons" 
-  value={selectedCoupon} 
-  onChange={(e) => setSelectedCoupon(e.target.value)} 
-  fullWidth 
-  sx={{ 
-    mb: 3, 
-    backgroundColor: 'rgba(255, 255, 255, 0.2)', 
-    borderRadius: 1, 
-    color: 'white', 
-    '& .MuiInputLabel-root': {
-      color: 'white',
-    },
-    '& .MuiMenuItem-root': {
-      color: 'white',
-    },
-    '& .MuiOutlinedInput-root': {
-      color: 'white',
-      '& fieldset': {
-        borderColor: 'white',
-      },
-      '&:hover fieldset': {
-        borderColor: 'white',
-      },
-    },
-  }}
-  InputProps={{
-    endAdornment: (
-      selectedCoupon && (
-        <IconButton
-          onClick={() => setSelectedCoupon('')}
-          sx={{ color: 'white', padding: 0 }}
+      <ToastContainer />
+      <Typography
+        variant="h4"
+        sx={{
+          color: "#ffffff",
+          mb: 3,
+          textAlign: "center",
+          fontWeight: "bold"
+        }}
+      >
+        <ShoppingCartIcon sx={{ fontSize: 40, verticalAlign: "middle", color: "green" }} /> Place Order
+      </Typography>
+      <Paper
+        elevation={3}
+        sx={{
+          padding: 3,
+          borderRadius: 2,
+          backgroundColor: "rgba(255, 255, 255, 0.1)",
+          backdropFilter: 'blur(5px)',
+        }}
+      >
+        <TextField
+          select
+          label="Coupons"
+          value={selectedCoupon}
+          onChange={(e) => setSelectedCoupon(e.target.value)}
+          fullWidth
+          sx={{
+            mb: 3,
+            backgroundColor: 'rgba(255, 255, 255, 0.2)',
+            borderRadius: 1,
+            color: 'white',
+            '& .MuiInputLabel-root': {
+              color: 'white',
+            },
+            '& .MuiMenuItem-root': {
+              color: 'white',
+            },
+            '& .MuiOutlinedInput-root': {
+              color: 'white',
+              '& fieldset': {
+                borderColor: 'white',
+              },
+              '&:hover fieldset': {
+                borderColor: 'white',
+              },
+            },
+          }}
+          InputProps={{
+            endAdornment: (
+              selectedCoupon && (
+                <IconButton
+                  onClick={() => setSelectedCoupon('')}
+                  sx={{ color: 'white', padding: 0 }}
+                >
+                  <ClearIcon />
+                </IconButton>
+              )
+            ),
+          }}
         >
-          <ClearIcon />
-        </IconButton>
-      )
-    ),
-  }}
->
-  {coupons.map((coupon) => (
-    <MenuItem key={coupon.code} value={coupon.code}>
-      <LocalOfferIcon sx={{ color: "green", mr: 1 }} /> {coupon.code} - ₹{coupon.discountAmount}
-    </MenuItem>
-  ))}
-</TextField>
-  
-      {products.map((product, index) => (
-        <Grid container spacing={2} key={index} alignItems="center" sx={{ mb: 2 }}>
-          <Grid item xs={5}>
-            <Autocomplete
-              options={productOptions} 
-              getOptionLabel={(option) => option.productName} 
-              renderInput={(params) => (
-                <TextField 
-                  {...params} 
-                  label="Product" 
-                  fullWidth 
-                  sx={{
-                    color: 'white', // White text for the input
-                    '& .MuiInputLabel-root': {
-                      color: 'white', // White label color
-                    },
-                    '& .MuiOutlinedInput-root': {
-                      color: 'white', // White input text
-                      '& fieldset': {
-                        borderColor: 'white', // Border color
-                      },
-                      '&:hover fieldset': {
-                        borderColor: 'white', // Hover border color
-                      },
-                    },
-                  }} 
-                />
-              )}
-              onChange={(event, value) => handleProductChange(index, value)} 
-            />
+          {coupons.map((coupon) => (
+            <MenuItem key={coupon.code} value={coupon.code}>
+              <LocalOfferIcon sx={{ color: "green", mr: 1 }} /> {coupon.code} - ₹{coupon.discountAmount}
+            </MenuItem>
+          ))}
+        </TextField>
+
+        <Typography variant="h6" sx={{ color: "#ffffff", mb: 2 }}>Product List</Typography>
+        {/* Enhanced table structure */}
+        <div style={{ border: '1px solid white', borderRadius: '5px', padding: '10px' }}>
+          <Grid container spacing={2}>
+            <Grid item xs={3}><Typography sx={{ color: '#ffffff', fontWeight: 'bold' }}>Product Image</Typography></Grid>
+            <Grid item xs={6}><Typography sx={{ color: '#ffffff', fontWeight: 'bold' }}>Product Name</Typography></Grid>
+            <Grid item xs={3}><Typography sx={{ color: '#ffffff', fontWeight: 'bold' }}>Select</Typography></Grid>
           </Grid>
-          <Grid item xs={3}>
-            <TextField 
-              label="Quantity" 
-              type="number" 
-              value={product.quantity} 
-              onChange={(e) => handleQuantityChange(index, Math.max(Number(e.target.value), 1))} 
+          {productOptions.map(product => (
+            <Grid container spacing={2} key={product._id} alignItems="center" sx={{ borderBottom: '1px solid white', padding: '10px 0' }}>
+              <Grid item xs={3}>
+                <img src={product.productImages[0]} alt={product.productName} style={{ width: '100px', height: '100px', border: '2px solid white', borderRadius: '4px' }} />
+              </Grid>
+              <Grid item xs={6}>
+                <Typography sx={{ color: '#ffffff' }}>{product.productName}</Typography>
+                <Typography sx={{ color: '#ffffff' }}>Price: ₹{product.MRP}</Typography>
+                {/* Enhanced quantity controls */}
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  border: '1px solid white',
+                  borderRadius: '4px',
+                  padding: '5px',
+                  marginTop: '5px',
+                  width: '100px'
+                }}>
+                  <Button
+                    variant="text"
+                    onClick={() => decrementQuantity(product._id)}
+                    sx={{ color: 'white', padding: '0 4px', borderRadius: '4px', minWidth: '28px' }}>-</Button>
+                  <Typography sx={{ color: '#ffffff', mx: 1 }}>{checkedProducts[product._id] || 1}</Typography>
+                  <Button
+                    variant="text"
+                    onClick={() => incrementQuantity(product._id)}
+                    sx={{ color: 'white', padding: '0 4px', borderRadius: '4px', minWidth: '28px' }}>+</Button>
+                </div>
+              </Grid>
+              <Grid item xs={3}>
+                <Checkbox
+                  checked={!!checkedProducts[product._id]}
+                  onChange={() => handleCheckboxChange(product._id)}
+                />
+                <Tooltip title="View Details">
+                  <Button variant="outlined" onClick={() => handleViewDetails(product)}>Details</Button>
+                </Tooltip>
+              </Grid>
+            </Grid>
+          ))}
+        </div>
+        <Divider sx={{ my: 2, borderColor: 'white' }} />
+        <Typography variant="h6" sx={{ color: '#ffffff' }}>Subtotal: ₹{subtotal}</Typography>
+        <Typography variant="h6" sx={{ color: '#ffffff' }}>Discount: ₹{discount}</Typography>
+        <Typography variant="h5" sx={{ color: "#ffffff", fontWeight: "bold" }}>Final Price: ₹{finalPrice}</Typography>
+        <Grid container spacing={2} sx={{ mt: 2 }}>
+          <Grid item xs={12}>
+            <Button
+              variant="contained"
+              onClick={placeOrder}
+              color="success"
+              disabled={submitting || subtotal === 0}
               fullWidth
               sx={{
-                backgroundColor: 'rgba(255, 255, 255, 0.2)', 
-                borderRadius: 1,
-                color: 'white', 
-                '& .MuiInputLabel-root': {
-                  color: 'white',
+                height: 55,
+                borderRadius: 12,
+                fontWeight: 'bold',
+                fontSize: 16,
+                textTransform: 'none',
+                background: 'linear-gradient(45deg, #66bb6a, #388e3c)',
+                boxShadow: 4,
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  background: 'linear-gradient(45deg, #388e3c, #66bb6a)',
+                  boxShadow: 12,
+                  transform: 'translateY(-5px)',
                 },
-                '& .MuiOutlinedInput-root': {
-                  color: 'white',
-                  '& fieldset': {
-                    borderColor: 'white',
-                  },
-                  '&:hover fieldset': {
-                    borderColor: 'white',
-                  },
+                '&:active': {
+                  transform: 'translateY(1px)',
+                  boxShadow: 6,
                 },
               }}
-            />
-          </Grid>
-          <Grid item xs={3}>
-            <TextField 
-              label="Price (₹)" 
-              type="number" 
-              value={product.price * product.quantity} 
-              fullWidth 
-              disabled 
-              sx={{
-                backgroundColor: 'rgba(255, 255, 255, 0.2)', 
-                borderRadius: 1,
-                color: 'white',
-                '& .MuiInputLabel-root': {
-                  color: 'white',
-                },
-                '& .MuiOutlinedInput-root': {
-                  color: 'white',
-                  '& fieldset': {
-                    borderColor: 'white',
-                  },
-                  '&:hover fieldset': {
-                    borderColor: 'white',
-                  },
-                },
-              }}
-            />
-          </Grid>
-          <Grid item xs={1}>
-            <Tooltip title="Remove Product">
-              <IconButton onClick={() => deleteProduct(index)} color="error">
-                <DeleteIcon sx={{ color: 'white' }} />
-              </IconButton>
-            </Tooltip>
+            >
+              {submitting ? "Placing Order..." : "Place Order"}
+            </Button>
           </Grid>
         </Grid>
-      ))}
-      <Divider sx={{ my: 2, borderColor: 'white' }} />
-      <Typography variant="h6" sx={{ color: '#ffffff' }}>Subtotal: ₹{subtotal}</Typography>
-      <Typography variant="h6" sx={{ color: '#ffffff' }}>Discount: ₹{discount}</Typography>
-      <Typography variant="h5" sx={{ color: "#ffffff", fontWeight: "bold" }}>Final Price: ₹{finalPrice}</Typography>
-      <Grid container spacing={2} sx={{ mt: 2 }}>
-        <Grid item xs={6}>
-          <Button
-            variant="contained"
-            onClick={addProduct}
-            color="success"
-            startIcon={<AddCircleIcon />}
-            fullWidth
-            sx={{
-              height: 55,
-              borderRadius: 12,
-              fontWeight: 'bold',
-              fontSize: 16,
-              textTransform: 'none',
-              paddingLeft: 2,
-              paddingRight: 2,
-              background: 'linear-gradient(45deg, #66bb6a, #388e3c)',
-              boxShadow: 4,
-              transition: 'all 0.3s ease',
-              '&:hover': {
-                background: 'linear-gradient(45deg, #388e3c, #66bb6a)',
-                boxShadow: 12,
-                transform: 'translateY(-5px)',
-              },
-              '&:active': {
-                transform: 'translateY(1px)',
-                boxShadow: 6,
-              },
-              '& .MuiButton-startIcon': {
-                marginRight: 1.5,
-                transition: 'all 0.3s ease',
-              },
-            }}
-          >
-            Add Product
-          </Button>
-        </Grid>
-        <Grid item xs={6}>
-          <Button
-            variant="contained"
-            onClick={placeOrder}
-            color="success"
-            disabled={submitting}
-            fullWidth
-            sx={{
-              height: 55,
-              borderRadius: 12,
-              fontWeight: 'bold',
-              fontSize: 16,
-              textTransform: 'none',
-              paddingLeft: 2,
-              paddingRight: 2,
-              background: 'linear-gradient(45deg, #66bb6a, #388e3c)',
-              boxShadow: 4,
-              transition: 'all 0.3s ease',
-              '&:hover': {
-                background: 'linear-gradient(45deg, #388e3c, #66bb6a)',
-                boxShadow: 12,
-                transform: 'translateY(-5px)',
-              },
-              '&:active': {
-                transform: 'translateY(1px)',
-                boxShadow: 6,
-              },
-              '& .MuiButton-startIcon': {
-                marginRight: 1.5,
-                transition: 'all 0.3s ease',
-              },
-            }}
-          >
-            {submitting ? "Placing Order..." : "Place Order"}
-          </Button>
-        </Grid>
-      </Grid>
-    </Paper>
-  </Box>
-  
+
+        <Modal open={modalOpen} onClose={handleModalClose}>
+          <Box sx={{
+            backgroundColor: "white",
+            borderRadius: 2,
+            padding: 4,
+            maxWidth: 600,
+            margin: "auto",
+            mt: '10%',
+            maxHeight: '70vh',
+            overflowY: 'auto',
+          }}>
+            {selectedProduct && (
+              <>
+                <Typography variant="h5">{selectedProduct.productName}</Typography>
+                <Grid container spacing={2}>
+                  <Grid item xs={6}>
+                    <img src={selectedProduct.productImages[0]} alt={selectedProduct.productName} style={{ width: '100%', height: 'auto' }} />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <TextField
+                      label="Description"
+                      value={selectedProduct.productDescription}
+                      fullWidth
+                      InputProps={{
+                        readOnly: true,
+                      }}
+                    />
+                    <TextField
+                      label="Price (₹)"
+                      value={selectedProduct.MRP}
+                      fullWidth
+                      InputProps={{
+                        readOnly: true,
+                      }}
+                      sx={{ mt: 2 }}
+                    />
+                    <TextField
+                      label="Category"
+                      value={selectedProduct.category}
+                      fullWidth
+                      InputProps={{
+                        readOnly: true,
+                      }}
+                      sx={{ mt: 2 }}
+                    />
+                    <TextField
+                      label="Sub-Category"
+                      value={selectedProduct.subCategory}
+                      fullWidth
+                      InputProps={{
+                        readOnly: true,
+                      }}
+                      sx={{ mt: 2 }}
+                    />
+                    <TextField
+                      label="Brand"
+                      value={selectedProduct.productBrandName}
+                      fullWidth
+                      InputProps={{
+                        readOnly: true,
+                      }}
+                      sx={{ mt: 2 }}
+                    />
+                  </Grid>
+                </Grid>
+                <Typography variant="h6" sx={{ mt: 2 }}>Additional Information</Typography>
+                <TextField
+                  label="Mode of Use"
+                  value={selectedProduct.modeOfUse}
+                  fullWidth
+                  InputProps={{
+                    readOnly: true,
+                  }}
+                  sx={{ mt: 1 }}
+                />
+                <TextField
+                  label="Note"
+                  value={selectedProduct.note}
+                  fullWidth
+                  InputProps={{
+                    readOnly: true,
+                  }}
+                  sx={{ mt: 1 }}
+                />
+                <TextField
+                  label="Chemical Composition"
+                  value={selectedProduct.productChemicalComposition}
+                  fullWidth
+                  InputProps={{
+                    readOnly: true,
+                  }}
+                  sx={{ mt: 1 }}
+                />
+                <TextField
+                  label="Features & Benefits"
+                  value={selectedProduct.featuresAndBenefits.join(', ')}
+                  fullWidth
+                  InputProps={{
+                    readOnly: true,
+                  }}
+                  sx={{ mt: 1 }}
+                />
+                <TextField
+                  label="How to Use"
+                  value={selectedProduct.howToUse.join(', ')}
+                  fullWidth
+                  InputProps={{
+                    readOnly: true,
+                  }}
+                  sx={{ mt: 1 }}
+                />
+                <TextField
+                  label="Doses"
+                  value={selectedProduct.doses.join(', ')}
+                  fullWidth
+                  InputProps={{
+                    readOnly: true,
+                  }}
+                  sx={{ mt: 1 }}
+                />
+                {selectedProduct.youtubeVideoLinks.length > 0 && (
+                  <TextField
+                    label="YouTube Links"
+                    value={selectedProduct.youtubeVideoLinks.join(', ')}
+                    fullWidth
+                    InputProps={{
+                      readOnly: true,
+                    }}
+                    sx={{ mt: 1 }}
+                  />
+                )}
+                {selectedProduct.faqs.map(faq => (
+                  <Box key={faq._id}>
+                    <TextField
+                      label={`Q: ${faq.question}`}
+                      value={faq.answer}
+                      fullWidth
+                      InputProps={{
+                        readOnly: true,
+                      }}
+                      sx={{ mt: 2 }}
+                    />
+                  </Box>
+                ))}
+              </>
+            )}
+            <Button variant="contained" onClick={handleModalClose} sx={{ mt: 2 }}>Close</Button>
+          </Box>
+        </Modal>
+      </Paper>
+    </Box>
   );
 };
 

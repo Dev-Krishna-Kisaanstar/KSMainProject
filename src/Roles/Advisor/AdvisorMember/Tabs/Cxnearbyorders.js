@@ -1,56 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, Typography, Grid, CircularProgress, Box, Container } from '@mui/material';
+import { Container, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, CircularProgress } from '@mui/material';
 import { useParams } from 'react-router-dom';
-import axios from 'axios'; // Ensure you have axios installed
+import axios from 'axios';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
-import { styled } from '@mui/material/styles';
-
-const StyledCard = styled(Card)(({ theme }) => ({
-  width: '100%',
-  maxWidth: 800,
-  margin: theme.spacing(2),
-  padding: theme.spacing(3),
-  backdropFilter: 'blur(10px)',
-  backgroundColor: 'rgba(15, 21, 53, 0.7)', // Custom color with transparency for the glass effect
-  color: 'white', // White text color
-  boxShadow: theme.shadows[12], // Enhanced shadow
-  borderRadius: '12px', // Rounded corners for a softer look
-}));
-
-const Header = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  flexDirection: 'column',
-  justifyContent: 'space-between',
-  marginBottom: theme.spacing(3),
-}));
-
-const InfoHeader = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'flex-start',
-  width: '100%',
-  marginTop: theme.spacing(2),
-}));
-
-const InfoContainer = styled(Box)(({ theme }) => ({
-  margin: theme.spacing(2, 0),
-  padding: theme.spacing(2),
-  border: `1px solid #4CAF50`, // Green border color
-  borderRadius: theme.shape.borderRadius,
-  backgroundColor: 'rgba(255, 255, 255, 0.2)', // Light transparent background to match glass effect
-  transition: 'all 0.3s ease', // Smooth transition effect for hover
-  '&:hover': {
-    backgroundColor: 'rgba(255, 255, 255, 0.3)', // Slightly darker background on hover
-    boxShadow: '0 4px 8px rgba(0, 255, 0, 0.2)', // Subtle green shadow effect on hover
-  },
-}));
-
-const DetailTypography = styled(Typography)(({ theme }) => ({
-  fontSize: '1.2rem', // Increased font size
-  color: 'white', // Ensure the text is white
-  lineHeight: 1.5, // Optional: Increase line height for better readability
-}));
+import PersonIcon from '@mui/icons-material/Person';
+import PlaceIcon from '@mui/icons-material/Place';
+import PostAddIcon from '@mui/icons-material/PostAdd';
+import AccountTreeIcon from '@mui/icons-material/AccountTree';
+import DomainIcon from '@mui/icons-material/Domain';
+import PublicIcon from '@mui/icons-material/Public';
 
 const Cxnearbyorders = () => {
   const [customerData, setCustomerData] = useState(null);
@@ -97,42 +56,44 @@ const Cxnearbyorders = () => {
 
   return (
     <Container maxWidth="lg" style={{ marginTop: '20px' }}>
-      <Grid container justifyContent="center">
-        <Grid item xs={12} sm={8} md={8}>
-          <StyledCard variant="outlined">
-            <CardContent>
-              <Header>
-                <Typography variant="h4" fontSize="2rem" fontWeight="bold">Nearby Customers Information</Typography>
-                <InfoHeader>
-                  <Box>
-                    <Typography variant="h6" fontWeight="bold">
-                      <LocationOnIcon color="success" /> Pin Code:
-                    </Typography>
-                    <DetailTypography>{customerData.pincode}</DetailTypography>
-                  </Box>
-                  <Box>
-                    <Typography variant="h6" fontWeight="bold">
-                      <ArrowForwardIcon color="success" /> Total Customers:
-                    </Typography>
-                    <DetailTypography>{customerData.totalCustomers}</DetailTypography>
-                  </Box>
-                </InfoHeader>
-              </Header>
-              {customerData.nearbyCustomers.map((customer, index) => (
-                <InfoContainer key={index}>
-                  <Typography variant="h6" fontWeight="bold" color="white" fontSize="1.2rem">Customer Name: {customer.customerId.fullName}</Typography>
-                  <DetailTypography component="div" color="white">Nearby Location: {customer.nearbyLocation}</DetailTypography>
-                  <DetailTypography component="div" color="white">Village: {customer.village}</DetailTypography>
-                  <DetailTypography component="div" color="white">Post Office: {customer.postOffice}</DetailTypography>
-                  <DetailTypography component="div" color="white">Taluka: {customer.taluka}</DetailTypography>
-                  <DetailTypography component="div" color="white">District: {customer.district}</DetailTypography>
-                  <DetailTypography component="div" color="white">State: {customer.state}</DetailTypography>
-                </InfoContainer>
-              ))}
-            </CardContent>
-          </StyledCard>
-        </Grid>
-      </Grid>
+      <Typography variant="h4" fontWeight="bold" color="white" gutterBottom>
+        Nearby Customers Information
+      </Typography>
+      <Typography variant="h6" fontWeight="bold" color="white">
+        <LocationOnIcon color="success" /> Pin Code: {customerData.pincode}
+      </Typography>
+      <Typography variant="h6" fontWeight="bold" color="white">
+        <ArrowForwardIcon color="success" /> Total Customers: {customerData.totalCustomers}
+      </Typography>
+
+      <TableContainer component={Paper} style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)', backdropFilter: 'blur(10px)', marginTop: '20px' }}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell align="center" sx={{ color: 'white' }}><PersonIcon /> Customer Name</TableCell>
+              <TableCell align="center" sx={{ color: 'white' }}><PlaceIcon /> Nearby Location</TableCell>
+              <TableCell align="center" sx={{ color: 'white' }}><PlaceIcon /> Village</TableCell>
+              <TableCell align="center" sx={{ color: 'white' }}><PostAddIcon /> Post Office</TableCell>
+              <TableCell align="center" sx={{ color: 'white' }}><AccountTreeIcon /> Taluka</TableCell>
+              <TableCell align="center" sx={{ color: 'white' }}><DomainIcon /> District</TableCell>
+              <TableCell align="center" sx={{ color: 'white' }}><PublicIcon /> State</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {customerData.nearbyCustomers.map((customer) => (
+              <TableRow key={customer.customerId._id}>
+                <TableCell align="center" sx={{ color: 'white' }}>{customer.customerId.fullName}</TableCell>
+                <TableCell align="center" sx={{ color: 'white' }}>{customer.nearbyLocation}</TableCell>
+                <TableCell align="center" sx={{ color: 'white' }}>{customer.village}</TableCell>
+                <TableCell align="center" sx={{ color: 'white' }}>{customer.postOffice}</TableCell>
+                <TableCell align="center" sx={{ color: 'white' }}>{customer.taluka}</TableCell>
+                <TableCell align="center" sx={{ color: 'white' }}>{customer.district}</TableCell>
+                <TableCell align="center" sx={{ color: 'white' }}>{customer.state}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
     </Container>
   );
 };

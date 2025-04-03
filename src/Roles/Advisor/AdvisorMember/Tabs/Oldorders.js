@@ -1,20 +1,20 @@
 import React, { useEffect, useState } from "react";
 import {
-    Card,
-    CardContent,
-    Typography,
-    Box,
-    Grid,
     Container,
-    Stack,
+    Typography,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
     Paper,
-    CssBaseline,
-    Button,
+    CssBaseline
 } from "@mui/material";
-import { CheckCircle, CancelScheduleSend, LocalOffer } from "@mui/icons-material";
+import { CheckCircle, CancelScheduleSend, DateRange, Person, AttachMoney, List } from "@mui/icons-material"; // Imported icons
 import axios from "axios";
-import { ToastContainer, toast } from 'react-toastify';
-import { useParams } from 'react-router-dom';
+import { ToastContainer, toast } from "react-toastify";
+import { useParams } from "react-router-dom";
 import 'react-toastify/dist/ReactToastify.css';
 
 const Oldorders = () => {
@@ -103,66 +103,47 @@ const Oldorders = () => {
                 Order History
             </Typography>
             {orders.length > 0 ? (
-                orders.map((order) => (
-                    <Paper key={order.orderId} elevation={4} sx={{
-                        padding: '20px',
-                        borderRadius: '10px',
-                        backgroundColor: 'rgba(255, 255, 255, 0.1)', // Transparent background for glass effect
-                        backdropFilter: 'blur(5px)', // Subtle blur for a glass-like effect
-                        mb: 3,
-                        color: 'white', // Ensure text is white inside the card
-                    }}>
-                        <CardContent>
-                            <Stack direction="row" alignItems="center" spacing={1}>
-                                {order.orderStatus === "Completed" ? (
-                                    <CheckCircle sx={{ color: "green" }} fontSize="large" />
-                                ) : (
-                                    <CancelScheduleSend sx={{ color: "green" }} fontSize="large" />
-                                )}
-                                <Typography variant="h6" sx={{ fontFamily: 'Poppins, sans-serif', fontWeight: 'bold' }}>
-                                    Order ID: {order.orderId}
-                                </Typography>
-                            </Stack>
-                            <Grid container spacing={2} alignItems="center" sx={{ mt: 2 }}>
-                                <Grid item xs={6}>
-                                    <Typography variant="body1" sx={{ fontWeight: '500', color: 'white', fontSize: '1.2rem' }}>
-                                        <b>Date of Order:</b> {new Date(order.createdAt).toLocaleDateString()}
-                                    </Typography>
-                                </Grid>
-                                <Grid item xs={6}>
-                                    <Typography variant="body1" sx={{ fontWeight: '500', color: 'white', fontSize: '1.2rem' }}>
-                                        <b>Order Placed By:</b> {order.orderPlacedBy}
-                                    </Typography>
-                                </Grid>
-                            </Grid>
-
-                            <Typography variant="body1" sx={{ fontWeight: '700', mt: 1, color: 'white', fontSize: '1.4rem' }}>
-                                Total Amount: ₹{order.totalAmount}
-                            </Typography>
-
-                            <Typography variant="body1" sx={{ fontWeight: '700', color: 'white', fontSize: '1.4rem' }}>
-                                Order Status: {order.orderStatus}
-                            </Typography>
-
-                            <Typography variant="body2" sx={{ fontWeight: '600', mt: 2 }}>
-                                Items:
-                            </Typography>
-                            {order.items.map((item) => (
-                                <Grid container spacing={2} key={item.productId} alignItems="center">
-                                    <Grid item xs={6}>
-                                        <Typography variant="body2" sx={{ fontWeight: '500' }}>
-                                            <LocalOffer sx={{ color: "orange", marginRight: '4px' }} />
-                                            {item.name}
-                                        </Typography>
-                                    </Grid>
-                                    <Grid item xs={3}>
-                                        <Typography variant="body2" sx={{ fontWeight: '500' }}>Qty: {item.quantity}</Typography>
-                                    </Grid>
-                                </Grid>
+                <TableContainer component={Paper} sx={{ backgroundColor: 'rgba(255, 255, 255, 0.1)', backdropFilter: 'blur(5px)' }}>
+                    <Table>
+                        <TableHead>
+                            <TableRow>
+                                <TableCell sx={{ color: 'white' }}><CheckCircle /> Order ID</TableCell>
+                                <TableCell sx={{ color: 'white' }}><DateRange /> Date of Order</TableCell>
+                                <TableCell sx={{ color: 'white' }}><Person /> Order Placed By</TableCell>
+                                <TableCell sx={{ color: 'white' }}><AttachMoney /> Total Amount</TableCell>
+                                <TableCell sx={{ color: 'white' }}><CancelScheduleSend /> Order Status</TableCell>
+                                <TableCell sx={{ color: 'white' }}><List /> Items</TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {orders.map((order) => (
+                                <TableRow key={order.orderId}>
+                                    <TableCell sx={{ color: 'white' }}>
+                                        {order.orderStatus === "Completed" ? (
+                                            <CheckCircle sx={{ color: "green", marginRight: '8px' }} fontSize="small" />
+                                        ) : (
+                                            <CancelScheduleSend sx={{ color: "orange", marginRight: '8px' }} fontSize="small" />
+                                        )}
+                                        {order.orderId}
+                                    </TableCell>
+                                    <TableCell sx={{ color: 'white' }}>
+                                        {new Date(order.createdAt).toLocaleString()} {/* Date with Time */}
+                                    </TableCell>
+                                    <TableCell sx={{ color: 'white' }}>{order.orderPlacedBy}</TableCell>
+                                    <TableCell sx={{ color: 'white' }}>₹{order.totalAmount}</TableCell>
+                                    <TableCell sx={{ color: 'white' }}>{order.orderStatus}</TableCell>
+                                    <TableCell sx={{ color: 'white' }}>
+                                        {order.items.map((item, index) => (
+                                            <div key={item.productId}>
+                                                {item.name} (Qty: {item.quantity}){index < order.items.length - 1 ? ', ' : ''}
+                                            </div>
+                                        ))}
+                                    </TableCell>
+                                </TableRow>
                             ))}
-                        </CardContent>
-                    </Paper>
-                ))
+                        </TableBody>
+                    </Table>
+                </TableContainer>
             ) : (
                 <Typography variant="h6" align="center" color="text.secondary" sx={{ fontWeight: 'bold', color: 'white' }}>
                     No orders found for this user.

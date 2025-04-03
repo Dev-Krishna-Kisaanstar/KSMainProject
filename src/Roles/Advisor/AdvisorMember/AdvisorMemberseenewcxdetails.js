@@ -828,7 +828,7 @@ const handleSubmitTagging = async () => {
     >
       <ShoppingCart style={{ color: activeComponent === 'placeOrder' ? 'white' : 'green', marginRight: '8px' }} /> Place Order
     </ToggleButton>
-    <ToggleButton
+    {/* <ToggleButton
   value="ProductListAdvisory" // Ensure the value matches the component name for product list
   aria-label="ProductListAdvisory"
   onClick={() => setActiveComponent('ProductListAdvisory')} // Add onClick to set active component
@@ -849,7 +849,7 @@ const handleSubmitTagging = async () => {
   }}
 >
   <ShoppingCart style={{ color: activeComponent === 'ProductListAdvisory' ? 'white' : 'green', marginRight: '8px' }} /> Search Product List
-</ToggleButton>
+</ToggleButton> */}
 
 <ToggleButton
   value="addAddress" // Ensure the value matches the component name for add address
