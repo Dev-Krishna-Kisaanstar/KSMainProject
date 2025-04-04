@@ -89,6 +89,7 @@ export default function Sidebar({ children }) {
     { text: 'Add Advisor', icon: <AddIcon />, link: '/AddAdvisorMember' }, // Using Plus icon
     { text: 'Adv Member List', icon: <ListIcon />, link: '/AdvisorMemberList' },
     { text: 'Advisory Orders', icon: <ShoppingCartIcon />, link: '/AllAdvisoryOrders' },
+    { text: 'Search CX', icon: <ShoppingCartIcon />, link: '/AdvisorAdminSearchcx' },
   ];
 
   return (

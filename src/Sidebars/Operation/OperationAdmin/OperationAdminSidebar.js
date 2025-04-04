@@ -89,6 +89,7 @@ export default function Sidebar({ children }) {
     { text: 'Add Opp Member', icon: <AddIcon />, link: '/AddOperationMember' }, // Using Plus icon
     { text: 'Opp Member List', icon: <ListIcon />, link: '/OperationMemberList' },
     { text: 'Orders', icon: <ShoppingCartIcon />, link: '/OppAOrders' },
+    { text: 'Search CX', icon: <ShoppingCartIcon />, link: '/OperationAdminSearchcx' },
   ];
 
   return (

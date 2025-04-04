@@ -100,6 +100,12 @@ import LogisticRegister from './Loginandregistration/LogisticRegisterandLogin/Lo
 import ProtectedRouteLogisticAdmin from './Roles/Logistic/Auth/ProtectedRoute';
 import LogisticDashboard from './Roles/Logistic/LogisticDashboard';
 import LogisticConfirmOrders from './Roles/Logistic/ConfirmOrders';
+import AdvisorAdminSearchcx from './Roles/Advisor/AdvisorAdmin/AdvisorAdminSearchcx';
+import AdvisorAdminseenewcxdetails from './Roles/Advisor/AdvisorAdmin/AdvisorAdminseenewcxdetails';
+import AdvisorAdminAddCx from './Roles/Advisor/AdvisorAdmin/AdvisorMemberAddCx';
+import OperationAdminSearchcx from './Roles/Operations/Operation Admin/OperationAdminSearchcx';
+import OperationAdminseenewcxdetails from './Roles/Operations/Operation Admin/OperationAdminseenewcxdetails';
+import OperationAdminAddCx from './Roles/Operations/Operation Admin/OperationAdminAddCx';
 
 // Function to get a cookie by name
 const getCookie = (name) => {
@@ -234,6 +240,9 @@ function App() {
             <Route path='/ToggleLogin/:customerId' element={<ProtectedRouteAdmin isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn}><ToggleLogin /></ProtectedRouteAdmin>} />
             <Route path='/AllAdvisoryOrders' element={<ProtectedRouteAdmin isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn}><AdvisorAdminAdvisoryOrders /></ProtectedRouteAdmin>} />
             <Route path='/Ordersbyadvisortoadmin/:advisorMemberId' element={<ProtectedRouteAdmin isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn}><Ordersbyadvisortoadmin /></ProtectedRouteAdmin>} />
+            <Route path='/AdvisorAdminSearchcx' element={<ProtectedRouteAdmin isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn}><AdvisorAdminSearchcx /></ProtectedRouteAdmin>} />
+            <Route path='/AdvisorAdminseenewcxdetails/:customerId' element={<ProtectedRouteAdmin isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn}><AdvisorAdminseenewcxdetails /></ProtectedRouteAdmin>} />
+            <Route path='/AdvisorAdminAddCx' element={<ProtectedRouteAdmin isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn}><AdvisorAdminAddCx /></ProtectedRouteAdmin>} />
 
 
             {/* Operation Admin  */}
@@ -243,6 +252,10 @@ function App() {
             <Route path='/OppToggleLogin/:customerId' element={<ProtectedRouteOperationAdmin isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn}><OppToggleLogin /></ProtectedRouteOperationAdmin>} />
             <Route path='/OppAOrders' element={<ProtectedRouteOperationAdmin isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn}><OppOrders /></ProtectedRouteOperationAdmin>} />
             <Route path='/AdvosorOrders/:operationalMemberId' element={<ProtectedRouteOperationAdmin isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn}><AdvisorIDOrders /></ProtectedRouteOperationAdmin>} />
+            <Route path='/OperationAdminSearchcx' element={<ProtectedRouteOperationAdmin isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn}><OperationAdminSearchcx /></ProtectedRouteOperationAdmin>} />
+            <Route path='/OperationAdminseenewcxdetails/:customerId' element={<ProtectedRouteOperationAdmin isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn}><OperationAdminseenewcxdetails /></ProtectedRouteOperationAdmin>} />
+            <Route path='/OperationAdminAddCx' element={<ProtectedRouteOperationAdmin isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn}><OperationAdminAddCx /></ProtectedRouteOperationAdmin>} />
+
 
 
             {/* Operation Member  */}
