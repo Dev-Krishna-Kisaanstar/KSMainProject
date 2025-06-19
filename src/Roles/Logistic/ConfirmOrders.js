@@ -14,6 +14,8 @@ import { CalendarToday } from '@mui/icons-material';
 import Sidebar from '../../Sidebars/Logistic/LogisticSidebar';
 import BillFormat from '../../Components/BillingForLogistics'; // Adjust the import path based on your file structure
 import Modal from '@mui/material/Modal';
+import Invoice from '../../Components/Invoice'; // Import the Invoice component
+import Barcodejson from '../../Assets/BarCode/BarCode.json';
 
 const ConfirmOrders = () => {
     const [selectedOrders, setSelectedOrders] = useState([]);
@@ -21,6 +23,7 @@ const ConfirmOrders = () => {
     const [endDate, setEndDate] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isDispatchModalOpen, setIsDispatchModalOpen] = useState(false);
+    const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false); // For invoice modal
     const [selectingEndDate, setSelectingEndDate] = useState(false);
     const [currentOrder, setCurrentOrder] = useState(null);
 
@@ -32,7 +35,7 @@ const ConfirmOrders = () => {
             const response = await axios.post(
                 `${process.env.REACT_APP_API_URL}/api/operational-admin/track-orders?orderStatus=Order%20Confirmed&startDate=${queryStartDate}&endDate=${queryEndDate}`,
                 null,
-                { withCredentials: true } 
+                { withCredentials: true }
             );
             setSelectedOrders(response.data.orders || []);
             if (!response.data.orders || response.data.orders.length === 0) {
@@ -43,11 +46,24 @@ const ConfirmOrders = () => {
         }
     };
 
-    useEffect(() => {
-        if (startDate && endDate) {
-            fetchOrdersByDateRange(startDate, endDate);
-        }
-    }, [startDate, endDate]);
+    const [availableBarcodes, setAvailableBarcodes] = useState([]);
+
+// Initialize barcode pool once component mounts
+// Existing barcode initialization useEffect
+useEffect(() => {
+  const barcodes = Barcodejson.data.map(item => {
+    const key = Object.keys(item)[0];
+    return item[key][0]; // extract barcode string
+  });
+  setAvailableBarcodes(barcodes);
+}, []);
+
+// New useEffect to trigger API after selecting dates
+useEffect(() => {
+  if (startDate && endDate) {
+    fetchOrdersByDateRange(startDate, endDate);
+  }
+}, [startDate, endDate]);
 
     const handleDateClick = ({ dateStr }) => {
         const clickedDate = new Date(dateStr);
@@ -145,10 +161,23 @@ const ConfirmOrders = () => {
         saveAs(blob, 'confirmed_orders.csv');
     };
 
-    const handleDispatchClick = (order) => {
+    // Handle "Dispatch" button click
+const handleDispatchClick = (order) => {
+  if (availableBarcodes.length === 0) {
+    alert('No barcodes available');
+    return;
+  }
+  const assignedBarcode = availableBarcodes[0];
+  setAvailableBarcodes(prev => prev.slice(1));
+  const orderWithBarcode = { ...order, assignedBarcode };
+  setCurrentOrder(orderWithBarcode);
+  setIsDispatchModalOpen(true);
+};
+
+    const handleInvoiceClick = (order) => {
         if (order) {
             setCurrentOrder(order);
-            setIsDispatchModalOpen(true);
+            setIsInvoiceModalOpen(true); // Open invoice modal
         }
     };
 
@@ -183,7 +212,8 @@ const ConfirmOrders = () => {
                                     <TableCell>Pincode</TableCell>
                                     <TableCell>Total Amount</TableCell>
                                     <TableCell>Status</TableCell>
-                                    <TableCell>Actions</TableCell>
+                                    <TableCell>Gen BarCode</TableCell>
+                                    <TableCell>Gen Invoice</TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
@@ -215,12 +245,23 @@ const ConfirmOrders = () => {
                                                 Dispatch
                                             </Button>
                                         </TableCell>
+                                        <TableCell>
+                                            <Button
+                                                variant="contained"
+                                                color="primary"
+                                                onClick={() => handleInvoiceClick(order)} // Call handleInvoiceClick
+                                            >
+                                                Invoice
+                                            </Button>
+                                        </TableCell>
                                     </TableRow>
                                 ))}
                             </TableBody>
                         </Table>
                     </TableContainer>
                 </Box>
+
+                {/* Calendar Modal */}
                 <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)}>
                     <Box p={4} bgcolor="white" color="black" width={600} height={600} mx="auto" mt={10} borderRadius={3} boxShadow={3} overflow="auto">
                         <Typography variant="h6" textAlign="center" mb={2} color="primary">
@@ -235,35 +276,49 @@ const ConfirmOrders = () => {
                     </Box>
                 </Modal>
 
+                {/* Dispatch Modal */}
                 <Modal open={isDispatchModalOpen} onClose={() => setIsDispatchModalOpen(false)}>
-    {currentOrder ? (
-        <Box p={4} bgcolor="white" color="black" width={1200} height={1000} mx="auto" mt={10} borderRadius={3} boxShadow={3} overflow="auto">
-            <Typography variant="h6" textAlign="center" mb={2} color="primary">
-                Dispatch Bill
-            </Typography>
+                    {currentOrder ? (
+                        <Box p={4} bgcolor="white" color="black" width={1200} height={1000} mx="auto" mt={10} borderRadius={3} boxShadow={3} overflow="auto">
+                            <Typography variant="h6" textAlign="center" mb={2} color="primary">
+                                Dispatch Bill
+                            </Typography>
 
-            <BillFormat
-                finalAmount={currentOrder.totalAmount}
-                orderId={currentOrder.orderId}
-                productName={currentOrder.products[0]?.productName || "Not Available"}
-                customerName={currentOrder.customerName || "Not Available"}
-                customerMobile={currentOrder.customerMobile || "Not Available"}
-                Address={{
-                    pincode: currentOrder.pincode || "Not Available",
-                    village: currentOrder.village || "Not Available",
-                    taluka: currentOrder.taluka || "Not Available",
-                    district: currentOrder.district || "Not Available",
-                    nearbyLocation: currentOrder.nearbyLocation || "Not Available", // Or make this also optional
-                    postOffice: currentOrder.postOffice || "Not Available" // Or make this also optional
-                }}
-            />
+                            <BillFormat
+  finalAmount={currentOrder.totalAmount}
+  orderId={currentOrder.orderId}
+  productName={currentOrder.products[0]?.productName || 'Not Available'}
+  customerName={currentOrder.customerName}
+  customerMobile={currentOrder.customerMobile}
+  Address={{
+    pincode: currentOrder.pincode,
+    village: currentOrder.village,
+    taluka: currentOrder.taluka,
+    district: currentOrder.district,
+    nearbyLocation: currentOrder.nearbyLocation,
+    postOffice: currentOrder.postOffice
+  }}
+  assignedBarcode={currentOrder.assignedBarcode}
+/>
 
-            <Button variant="contained" color="error" fullWidth sx={{ mt: 2, borderRadius: 2 }} onClick={() => setIsDispatchModalOpen(false)}>Close</Button>
-        </Box>
-    ) : (
-        <Typography variant="h6" textAlign="center" color="red">No Order Details Available</Typography>
-    )}
-</Modal>
+                            <Button variant="contained" color="error" fullWidth sx={{ mt: 2, borderRadius: 2 }} onClick={() => setIsDispatchModalOpen(false)}>Close</Button>
+                        </Box>
+                    ) : (
+                        <Typography variant="h6" textAlign="center" color="red">No Order Details Available</Typography>
+                    )}
+                </Modal>
+
+                {/* Invoice Modal */}
+                <Modal open={isInvoiceModalOpen} onClose={() => setIsInvoiceModalOpen(false)}>
+                    {currentOrder ? (
+                        <Box p={4} bgcolor="white" color="black" width={1200} height={1000} mx="auto" mt={10} borderRadius={3} boxShadow={3} style={{ overflowY: 'auto', maxHeight: '80vh' }}>
+                            <Invoice order={currentOrder} /> {/* Pass the current order to the Invoice component */}
+                            <Button variant="contained" color="error" fullWidth sx={{ mt: 2, borderRadius: 2 }} onClick={() => setIsInvoiceModalOpen(false)}>Close</Button>
+                        </Box>
+                    ) : (
+                        <Typography variant="h6" textAlign="center" color="red">No Invoice Details Available</Typography>
+                    )}
+                </Modal>
             </div>
         </>
     );

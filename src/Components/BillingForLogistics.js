@@ -6,30 +6,23 @@ import JsBarcode from 'jsbarcode'; // Import JsBarcode
 
 // Function to generate a Base64 barcode image
 const generateBarcode = (barcodeValue) => {
-  console.log(`Generating barcode for value: ${barcodeValue}`);
-  const canvas = document.createElement('canvas'); // Create a canvas
+  const canvas = document.createElement('canvas');
   JsBarcode(canvas, barcodeValue, {
-    format: 'CODE128', // Specify the format of the barcode
-    displayValue: true, // Feature to display the value underneath the barcode
+    format: 'CODE128',
+    displayValue: true,
   });
-  return canvas.toDataURL('image/png'); // Convert canvas content to Base64 image format
+  return canvas.toDataURL('image/png');
 };
 
-// Function to convert numbers to words
 const numberToWords = (num) => {
   if (num === 0) return 'zero rupees';
 
-  const belowTwenty = [
-    'zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine',
-    'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 
-    'seventeen', 'eighteen', 'nineteen'
-  ];
-
-  const belowHundred = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 
-                        'seventy', 'eighty', 'ninety'];
+  const belowTwenty = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine',
+    'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'];
+  const belowHundred = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
   const aboveHundred = ['thousand', 'million', 'billion'];
 
-  const parseNumber = (n) => {
+   const parseNumber = (n) => {
     const words = [];
     if (n >= 100) {
       const hundreds = Math.floor(n / 100);
@@ -47,7 +40,7 @@ const numberToWords = (num) => {
     return words.join(' ');
   };
 
-  const scaleNumbers = (n) => {
+ const scaleNumbers = (n) => {
     if (n === 0) return 'zero';
     let scale = 0;
     const words = [];
@@ -76,22 +69,18 @@ const BillFormat = ({
   productName,
   customerName,
   customerMobile,
-  Address
+  Address,
+  assignedBarcode // <-- ensure you accept this prop
 }) => {
-  const [currentIndex, setCurrentIndex] = useState(0);
   const [barcodeImage, setBarcodeImage] = useState('');
+  const [currentIndex, setCurrentIndex] = useState(0);
 
-  // This effect generates a barcode whenever currentIndex changes
   useEffect(() => {
-    // Ensure currentIndex is valid and in range
-    if (currentIndex < Barcodejson.data.length) {
-      const barcodeValue = Barcodejson.data[currentIndex][currentIndex.toString()][0]; // Get the barcode value
-      const fullBarcodeValue = `${barcodeValue}`; // Prepare the barcode value
-      const generatedBarcodeImage = generateBarcode(fullBarcodeValue); // Generate the barcode image
-      setBarcodeImage(generatedBarcodeImage); // Set the generated barcode image
-      console.log(`Generated Barcode Image for ${fullBarcodeValue}: ${generatedBarcodeImage}`);
+    if (assignedBarcode) {
+      const barcodeDataUrl = generateBarcode(assignedBarcode);
+      setBarcodeImage(barcodeDataUrl);
     }
-  }, [currentIndex]);
+  }, [assignedBarcode]);
 
   // Convert amount to words
   const totalAmountWords = numberToWords(finalAmount);
