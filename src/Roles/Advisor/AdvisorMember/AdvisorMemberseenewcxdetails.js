@@ -471,6 +471,7 @@ const toggleEditFarming = () => {
           handleUpdateFarmingDetails();
       }
 
+      setIsEditableFarming(false);
       setIsEditingFarming(false); // Exit editing mode
   } else {
       setIsEditableFarming(true); // Enable editing mode
@@ -649,7 +650,7 @@ const handleSubmitTagging = async () => {
                     color: 'white',  // White text color inside text field
                   },
                   fieldset: {
-                    borderColor: 'green'  // Green border for the text field
+                    borderColor: '#0F1535',borderRadius:'20px'  // Green border for the text field 
                   }
                 }}
               />
@@ -675,7 +676,7 @@ const handleSubmitTagging = async () => {
                     color: 'white',  // White text color inside text field
                   },
                   fieldset: {
-                    borderColor: 'green'  // Green border for the text field
+                    borderColor: '#0F1535',borderRadius:'20px'  // Green border for the text field
                   }
                 }}
               />
@@ -698,7 +699,7 @@ const handleSubmitTagging = async () => {
                     color: 'white',  // White text color inside text field
                   },
                   fieldset: {
-                    borderColor: 'green'  // Green border for the text field
+                    borderColor: '#0F1535',borderRadius:'20px'  // Green border for the text field
                   }
                 }}
               />
@@ -724,7 +725,7 @@ const handleSubmitTagging = async () => {
                       color: 'white',  // White text color inside text field
                     },
                     fieldset: {
-                      borderColor: 'green'  // Green border for the text field
+                      borderColor: '#0F1535',borderRadius:'20px'  // Green border for the text field
                     }
                   }}
                 />
@@ -1020,251 +1021,407 @@ const handleSubmitTagging = async () => {
 )}
         </div>
 
-      {/* Farming Details Section */}
-      {activeComponent === 'addFarmingDetails' && (
-  <GlassEffectBox>
-    <Typography variant="h6" className="mb-2" style={{ display: 'flex', alignItems: 'center', fontFamily: 'Poppins, sans-serif', color: 'white' }}>
-      Farming Details
-      <div style={{ marginLeft: 'auto' }}>
-        <IconButton onClick={toggleEditFarming} color="primary">
-          {isEditingFarming ? <Save style={{ color: 'green' }} /> : <Edit style={{ color: 'green' }} />}
-        </IconButton>
-      </div>
-    </Typography>
-    <Grid container spacing={3}>
-      {/* Source of Irrigation */}
-      <Grid item xs={12}>
-        <Typography variant="subtitle1" style={{ color: 'white' }}>Source of Irrigation</Typography>
-        <Select
-          fullWidth
-          multiple
-          value={farmingDetails.sourceOfIrrigation}
-          onChange={(e) => {
-            const { target: { value } } = e;
-            const newValue = typeof value === 'string' ? value.split(',') : value;
-            setFarmingDetails((prevDetails) => ({
-              ...prevDetails,
-              sourceOfIrrigation: newValue,
-            }));
-          }}
-          input={<OutlinedInput style={{ color: 'white' }} />}
-          renderValue={(selected) => (
-            <Box display="flex" flexWrap="wrap" gap={0.5}>
-              {selected.map((value) => (
-                <Chip key={value} label={value} style={{ color: 'white', backgroundColor: 'rgba(255, 255, 255, 0.3)' }} />
-              ))}
-            </Box>
+    {/* Farming Details Section */}
+ {activeComponent === 'addFarmingDetails' && (
+        <GlassEffectBox>
+          {/* Header with title and edit/save button */}
+          <Typography
+            variant="h6"
+            className="mb-2"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              fontFamily: 'Poppins, sans-serif',
+              color: 'white',
+            }}
+          >
+            Farming Details
+            <div style={{ marginLeft: 'auto' }}>
+              <IconButton onClick={toggleEditFarming} color="primary">
+                {isEditingFarming ? (
+                  <Save style={{ color: 'green' }} />
+                ) : (
+                  <Edit style={{ color: 'green' }} />
+                )}
+              </IconButton>
+            </div>
+          </Typography>
+
+          {/* Farming details form grid in 50-50 layout */}
+          <Grid container spacing={3}>
+            {/* Left Column */}
+            <Grid item xs={12} md={6}>
+              {/* Source of Irrigation */}
+              <Typography variant="subtitle1" style={{ color: 'white' }}>
+                Source of Irrigation
+              </Typography>
+              <Select
+                fullWidth
+                multiple
+                value={farmingDetails.sourceOfIrrigation}
+                onChange={(e) => {
+                  const { target: { value } } = e;
+                  const newValue = typeof value === 'string' ? value.split(',') : value;
+                  setFarmingDetails((prev) => ({
+                    ...prev,
+                    sourceOfIrrigation: newValue,
+                  }));
+                }}
+                input={<OutlinedInput style={{ color: 'white' }} />}
+                renderValue={(selected) => (
+                  <Box display="flex" flexWrap="wrap" gap={0.5}>
+                    {selected.map((val) => (
+                      <Chip
+                        key={val}
+                        label={val}
+                        style={{
+                          color: 'white',
+                          backgroundColor: 'rgba(255, 255, 255, 0.3)',
+                        }}
+                      />
+                    ))}
+                  </Box>
+                )}
+                disabled={!isEditableFarming}
+                style={{ color: 'white' }}
+              >
+                {sourceOfIrrigationOptions.map((option) => (
+                  <MenuItem
+                    key={option}
+                    value={option}
+                    style={{
+                      color: 'white',
+                      backgroundColor: '#0F1535',
+                    }}
+                  >
+                    {farmingDetails.sourceOfIrrigation.includes(option) ? (
+                      <strong style={{ color: 'white' }}>{option}</strong>
+                    ) : (
+                      <span style={{ color: 'white' }}>{option}</span>
+                    )}
+                  </MenuItem>
+                ))}
+              </Select>
+
+              {/* Land Acquisition */}
+              <Typography variant="subtitle1" style={{ color: 'white', marginTop: '16px' }}>
+                Land Acquisition
+              </Typography>
+              <TextField
+                variant="outlined"
+                fullWidth
+                name="landAcquisition"
+                value={farmingDetails.landAcquisition}
+                onChange={handleChangeFarming}
+                InputProps={{
+                  readOnly: !isEditableFarming,
+                  style: { color: 'white' },
+                }}
+                style={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                  color: 'white',
+                  marginTop: '8px',
+                }}
+              />
+
+              {/* Kisaanstar Info */}
+              <Typography variant="subtitle1" style={{ color: 'white', marginTop: '16px' }}>
+                Kisaanstar Info
+              </Typography>
+              <Select
+                fullWidth
+                value={farmingDetails.kisaanstarInfo || ''}
+                onChange={(e) => {
+                  const { value } = e.target;
+                  setFarmingDetails((prev) => ({
+                    ...prev,
+                    kisaanstarInfo: value,
+                  }));
+                }}
+                input={<OutlinedInput style={{ color: 'white' }} />}
+                displayEmpty
+                disabled={!isEditableFarming}
+                style={{ marginTop: '8px', color: 'white' }}
+                renderValue={(selected) => (
+                  <span
+                    style={{
+                      display: 'inline-block',
+                      padding: '4px 8px',
+                      borderRadius: '5px',
+                      backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                      color: 'white',
+                    }}
+                  >
+                    {selected}
+                  </span>
+                )}
+                MenuProps={{
+                  PaperProps: { style: { maxHeight: 200, backgroundColor: 'white' } },
+                  MenuListProps: { style: { padding: 0 } },
+                }}
+              >
+                {kisaanstarInfoOptions.map((option) => (
+                  <MenuItem
+                    key={option}
+                    value={option}
+                    style={{
+                      backgroundColor: 'white',
+                      color: 'black',
+                      fontWeight: farmingDetails.kisaanstarInfo === option ? 'bold' : 'normal',
+                    }}
+                  >
+                    {option}
+                  </MenuItem>
+                ))}
+              </Select>
+            </Grid>
+
+            {/* Right Column */}
+            <Grid item xs={12} md={6}>
+              {/* Crop */}
+              <Typography variant="subtitle1" style={{ color: 'white' }}>
+                Crop
+              </Typography>
+              <Select
+                fullWidth
+                multiple
+                value={farmingDetails.crop}
+                onChange={(e) => {
+                  const { target: { value } } = e;
+                  const newValue = typeof value === 'string' ? value.split(',') : value;
+                  setFarmingDetails((prev) => ({
+                    ...prev,
+                    crop: newValue,
+                  }));
+                }}
+                input={<OutlinedInput style={{ color: 'white' }} />}
+                renderValue={(selected) => (
+                  <Box display="flex" flexWrap="wrap" gap={0.5}>
+                    {selected.map((val) => (
+                      <Chip
+                        key={val}
+                        label={val}
+                        style={{
+                          color: 'white',
+                          backgroundColor: 'rgba(255, 255, 255, 0.3)',
+                        }}
+                      />
+                    ))}
+                  </Box>
+                )}
+                disabled={!isEditableFarming}
+                style={{ marginTop: '8px', color: 'white' }}
+              >
+                {cropOptions.map((option) => (
+                  <MenuItem
+                    key={option}
+                    value={option}
+                    style={{
+                      color: 'white', backgroundColor: '#0F1535'
+                    }}
+                  >
+                    {farmingDetails.crop.includes(option) ? (
+                      <strong style={{ color: 'white' }}>{option}</strong>
+                    ) : (
+                      <span style={{ color: 'white' }}>{option}</span>
+                    )}
+                  </MenuItem>
+                ))}
+              </Select>
+
+              {/* Animal Husbandry */}
+              <Typography variant="subtitle1" style={{ color: 'white', marginTop: '16px' }}>
+                Animal Husbandry
+              </Typography>
+              <Select
+                fullWidth
+                multiple
+                value={farmingDetails.animalHusbandry}
+                onChange={(e) => {
+                  const { target: { value } } = e;
+                  const newValue = typeof value === 'string' ? value.split(',') : value;
+                  setFarmingDetails((prev) => ({
+                    ...prev,
+                    animalHusbandry: newValue,
+                  }));
+                }}
+                input={<OutlinedInput style={{ color: 'white' }} />}
+                renderValue={(selected) => (
+                  <Box display="flex" flexWrap="wrap" gap={0.5}>
+                    {selected.map((val) => (
+                      <Chip
+                        key={val}
+                        label={val}
+                        style={{
+                          color: 'white',
+                          backgroundColor: 'rgba(255, 255, 255, 0.3)',
+                        }}
+                      />
+                    ))}
+                  </Box>
+                )}
+                disabled={!isEditableFarming}
+                style={{ marginTop: '8px', color: 'white' }}
+              >
+                {animalHusbandryOptions.map((option) => (
+                  <MenuItem
+                    key={option}
+                    value={option}
+                    style={{
+                      color: 'white', backgroundColor: '#0F1535'
+                    }}
+                  >
+                    {farmingDetails.animalHusbandry.includes(option) ? (
+                      <strong style={{ color: 'white' }}>{option}</strong>
+                    ) : (
+                      <span style={{ color: 'white' }}>{option}</span>
+                    )}
+                  </MenuItem>
+                ))}
+              </Select>
+            </Grid>
+          </Grid>
+
+          {/* Show save/update button only when in edit mode */}
+          {isEditableFarming && (
+            <StyledButton
+              variant="contained"
+              onClick={() => {
+                toggleEditFarming();
+              }}
+              style={{ color: 'white' }}
+            >
+              {Object.values(farmingDetails).some((field) => field) ? 'Update Farming Details' : 'Save Farming Details'}
+            </StyledButton>
           )}
-          disabled={!isEditableFarming}
-          style={{ color: 'white' }}
-        >
-          {sourceOfIrrigationOptions.map((option) => (
-            <MenuItem key={option} value={option} style={{ color: 'black', backgroundColor: 'white' }}>
-              {farmingDetails.sourceOfIrrigation.includes(option) ? <strong>{option}</strong> : option}
-            </MenuItem>
-          ))}
-        </Select>
-      </Grid>
-
-      {/* Land Acquisition */}
-      <Grid item xs={12}>
-        <TextField
-          label="Land Acquisition"
-          variant="outlined"
-          fullWidth
-          name="landAcquisition"
-          value={farmingDetails.landAcquisition}
-          onChange={handleChangeFarming}
-          InputProps={{
-            readOnly: !isEditableFarming,
-            style: { color: 'white' }
-          }}
-          style={{ backgroundColor: 'rgba(255, 255, 255, 0.2)', color: 'white' }}
-        />
-      </Grid>
-
-      {/* Kisaanstar Info */}
-      <Grid item xs={12}>
-        <Typography variant="subtitle1" style={{ color: 'white' }}>Kisaanstar Info</Typography>
-        <Select
-          fullWidth
-          value={farmingDetails.kisaanstarInfo || ''}
-          onChange={(e) => {
-            const { value } = e.target;
-            setFarmingDetails((prevDetails) => ({
-              ...prevDetails,
-              kisaanstarInfo: value,
-            }));
-          }}
-          input={<OutlinedInput style={{ color: 'white' }} />}
-          displayEmpty
-          disabled={!isEditableFarming}
-          style={{ color: 'white' }}
-        >
-          {kisaanstarInfoOptions.map((option) => (
-            <MenuItem key={option} value={option} style={{ color: 'black', backgroundColor: 'white' }}>
-              {option}
-            </MenuItem>
-          ))}
-        </Select>
-      </Grid>
-
-      {/* Crop */}
-      <Grid item xs={12}>
-        <Typography variant="subtitle1" style={{ color: 'white' }}>Crop</Typography>
-        <Select
-          fullWidth
-          multiple
-          value={farmingDetails.crop}
-          onChange={(e) => {
-            const { target: { value } } = e;
-            const newValue = typeof value === 'string' ? value.split(',') : value;
-            setFarmingDetails((prevDetails) => ({
-              ...prevDetails,
-              crop: newValue,
-            }));
-          }}
-          input={<OutlinedInput style={{ color: 'white' }} />}
-          renderValue={(selected) => (
-            <Box display="flex" flexWrap="wrap" gap={0.5}>
-              {selected.map((value) => (
-                <Chip key={value} label={value} style={{ color: 'white', backgroundColor: 'rgba(255, 255, 255, 0.3)' }} />
-              ))}
-            </Box>
-          )}
-          disabled={!isEditableFarming}
-          style={{ color: 'white' }}
-        >
-          {cropOptions.map((option) => (
-            <MenuItem key={option} value={option} style={{ color: 'black', backgroundColor: 'white' }}>
-              {farmingDetails.crop.includes(option) ? <strong>{option}</strong> : option}
-            </MenuItem>
-          ))}
-        </Select>
-      </Grid>
-
-      {/* Animal Husbandry */}
-      <Grid item xs={12}>
-        <Typography variant="subtitle1" style={{ color: 'white' }}>Animal Husbandry</Typography>
-        <Select
-          fullWidth
-          multiple
-          value={farmingDetails.animalHusbandry}
-          onChange={(e) => {
-            const { target: { value } } = e;
-            const newValue = typeof value === 'string' ? value.split(',') : value;
-            setFarmingDetails((prevDetails) => ({
-              ...prevDetails,
-              animalHusbandry: newValue,
-            }));
-          }}
-          input={<OutlinedInput style={{ color: 'white' }} />}
-          renderValue={(selected) => (
-            <Box display="flex" flexWrap="wrap" gap={0.5}>
-              {selected.map((value) => (
-                <Chip key={value} label={value} style={{ color: 'white', backgroundColor: 'rgba(255, 255, 255, 0.3)' }} />
-              ))}
-            </Box>
-          )}
-          disabled={!isEditableFarming}
-          style={{ color: 'white' }}
-        >
-          {animalHusbandryOptions.map((option) => (
-            <MenuItem key={option} value={option} style={{ color: 'black', backgroundColor: 'white' }}>
-              {farmingDetails.animalHusbandry.includes(option) ? <strong>{option}</strong> : option}
-            </MenuItem>
-          ))}
-        </Select>
-      </Grid>
-    </Grid>
-
-    {/* Show save button based on editing state */}
-    {isEditableFarming ? (
-      <StyledButton
-        variant="contained"
-        onClick={() => {
-          // Calls submit or update depending on the current state
-          toggleEditFarming();
-        }}
-        style={{ color: 'white' }}
-      >
-        {Object.values(farmingDetails).some(field => field) ? 'Update Farming Details' : 'Save Farming Details'}
-      </StyledButton>
-    ) : null}
-  </GlassEffectBox>
-)}
+        </GlassEffectBox>
+      )}
 
 {/* Services Selection Dialog */}
-<Dialog open={openServiceDialog} onClose={() => setOpenServiceDialog(false)} maxWidth="md">
-  <DialogTitle style={{ display: 'flex', alignItems: 'center' }}>
-    <NearMe style={{ color: 'green', marginRight: '8px' }} />
-    Select Services
-  </DialogTitle>
-  <Box sx={{ padding: 2 }}>
-    <Grid container spacing={2}>
-      <Grid item xs={12} md={4}>
-      <Select
+<Dialog
+  open={openServiceDialog}
+  onClose={() => setOpenServiceDialog(false)}
   fullWidth
-  value={selectedServices.service1}
-  onChange={(e) => setSelectedServices((prev) => ({ ...prev, service1: e.target.value }))}
-  displayEmpty
-  sx={{
-    '& .MuiSelect-root': {
-      color: 'black', // Set text color of selected value
-    },
-    '& .MuiMenuItem-root': {
-      color: 'black', // Set text color of each menu item
-    },
+  maxWidth="md"
+  PaperProps={{
+    style: {
+      width: '80%',
+      height: '50%', // Increased height for larger size
+      maxWidth: 'none',
+      borderRadius: 20,
+      boxShadow: '0 8px 16px rgba(0,0,0,0.3)',
+      backgroundColor: '#1e1e2f',
+    }
   }}
 >
-  <MenuItem value="">
-    <em>Select Service 1</em>
-  </MenuItem>
-  {services.map((service, index) => service.service1 && (
-    <MenuItem key={index} value={service.service1}>
-      {service.service1}
-    </MenuItem>
-  ))}
-</Select>
-
-      </Grid>
+  <DialogTitle
+    sx={{
+      display: 'flex',
+      alignItems: 'center',
+      backgroundColor: '#4CAF50',
+      color: 'white',
+      borderTopLeftRadius: 20,
+      borderTopRightRadius: 20,
+      padding: 2,
+    }}
+  >
+    <NearMe sx={{ fontSize: 30, marginRight: 10 }} />
+    <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
+      Advisory Tagging
+    </Typography>
+  </DialogTitle>
+  <Box sx={{ padding: 4, height: 'calc(100% - 80px)', overflowY: 'auto' }}>
+    <Grid container spacing={3}>
+      {/* Service 1 */}
       <Grid item xs={12} md={4}>
-      <Select
-  fullWidth
-  value={selectedServices.service2}
-  onChange={(e) => setSelectedServices((prev) => ({ ...prev, service2: e.target.value }))}
-  displayEmpty
-  input={<OutlinedInput style={{ color: 'black' }} />}  // Set input text color to black
->
-  <MenuItem value="" style={{ color: 'black' }}>  {/* Set MenuItem text color to black */}
-    <em>Select Service 2</em>
-  </MenuItem>
-  {services.map((service, index) => service.service2 && (
-    <MenuItem key={index} value={service.service2} style={{ color: 'black' }}>  {/* Set each service option text color to black */}
-      {service.service2}
-    </MenuItem>
-  ))}
-</Select>
-
+        <Typography variant="h6" sx={{ mb: 1, color: 'white' }}>Service 1</Typography>
+        <Select
+          fullWidth
+          value={selectedServices.service1}
+          onChange={(e) => setSelectedServices(prev => ({ ...prev, service1: e.target.value }))}
+          displayEmpty
+          sx={{
+            '& .MuiOutlinedInput-root': {
+              fontSize: 18,
+              borderRadius: 10,
+            },
+            '& .MuiOutlinedInput-notchedOutline': {
+              borderColor: 'white',
+            },
+            backgroundColor: 'white',
+            color: 'black',
+          }}
+        >
+          <MenuItem value="">
+            <em style={{ fontSize: 16, color: '#999' }}>Select Service 1</em>
+          </MenuItem>
+          {services.map((service, index) => service.service1 && (
+            <MenuItem key={index} value={service.service1} style={{ fontSize: 16 }}>
+              {service.service1}
+            </MenuItem>
+          ))}
+        </Select>
       </Grid>
+      {/* Service 2 */}
       <Grid item xs={12} md={4}>
+        <Typography variant="h6" sx={{ mb: 1, color: 'white' }}>Service 2</Typography>
+        <Select
+          fullWidth
+          value={selectedServices.service2}
+          onChange={(e) => setSelectedServices(prev => ({ ...prev, service2: e.target.value }))}
+          displayEmpty
+          input={<OutlinedInput />}
+          sx={{
+            '& .MuiOutlinedInput-root': {
+              fontSize: 18,
+              borderRadius: 10,
+            },
+            '& .MuiOutlinedInput-notchedOutline': {
+              borderColor: 'white',
+            },
+            backgroundColor: 'white',
+            color: 'black',
+          }}
+        >
+          <MenuItem value="">
+            <em style={{ fontSize: 16, color: '#999' }}>Select Service 2</em>
+          </MenuItem>
+          {services.map((service, index) => service.service2 && (
+            <MenuItem key={index} value={service.service2} style={{ fontSize: 16 }}>
+              {service.service2}
+            </MenuItem>
+          ))}
+        </Select>
+      </Grid>
+      
+      {/* Service 3 Description - Make it big and prominent */}
+      <Grid item xs={12} md={12}> {/* Full width for better size */}
+        <Typography variant="h6" sx={{ mb: 2, color: 'white' }}>Service 3 Description</Typography>
         <TextField
           fullWidth
-          label="Service 3 Description"
-          value={selectedServices.service3}
-          onChange={(e) => setSelectedServices((prev) => ({ ...prev, service3: e.target.value }))}
-          variant="outlined"
           placeholder="Describe your service here"
-          style={{ color: 'white' }}
+          variant="outlined"
+          value={selectedServices.service3}
+          onChange={(e) => setSelectedServices(prev => ({ ...prev, service3: e.target.value }))}
+          multiline
+          rows={6} // Make it larger vertically
+          sx={{
+            input: { fontSize: 16, color: 'white' },
+            backgroundColor: 'white',
+            borderRadius: 2,
+            '& .MuiOutlinedInput-root': {
+              height: '100%', // Ensures full height if needed
+            },
+          }}
         />
       </Grid>
     </Grid>
   </Box>
-  <DialogActions>
-    <Button onClick={() => setOpenServiceDialog(false)} color="error">
+  <DialogActions sx={{ padding: 2, backgroundColor: '#1e1e2f', borderBottomLeftRadius: 20, borderBottomRightRadius: 20 }}>
+    <Button onClick={() => setOpenServiceDialog(false)} color="error" variant="contained" sx={{ fontSize: 16, paddingX: 2, borderRadius: 2 }}>
       Cancel
     </Button>
-    <Button onClick={handleSubmitTagging} color="primary">
+    <Button onClick={handleSubmitTagging} color="primary" variant="contained" sx={{ fontSize: 16, paddingX: 2, borderRadius: 2 }}>
       Submit Services
     </Button>
   </DialogActions>
