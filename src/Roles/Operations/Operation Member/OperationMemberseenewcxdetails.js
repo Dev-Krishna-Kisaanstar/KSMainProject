@@ -33,9 +33,8 @@ import { styled } from '@mui/material/styles';
 import ProductListAdvisory from './Tabs/ProductList'
 import { School } from '@mui/icons-material';
 import AdminPanelSettings from '@mui/icons-material/AdminPanelSettings';
-import Sidebar from '../../../Sidebars/Advisor/AdvisorAdmin/AdvisorAdminSidebar';
 
-function AdvisorAdminseenewcxdetails() {
+function OperationMemberseenewcxdetails() {
   TaggingAuth();
   const location = useLocation();
 
@@ -140,70 +139,99 @@ function AdvisorAdminseenewcxdetails() {
     }
   }, [mobileNumber]);
 
-  const fetchCustomerDetails = async (mobileNumber) => {
-    setLoading(true);
-    setError('');
-    setCustomer(null); // Reset customer state
+ const fetchCustomerDetails = async (mobileNumber) => {
+  console.log('Starting fetchCustomerDetails with mobileNumber:', mobileNumber);
+  setLoading(true);
+  setError('');
+  setCustomer(null); // Reset customer state
 
-    try {
-        const response = await axios.get(
-            `${process.env.REACT_APP_API_URL}/api/advisory-member/search-customer/${mobileNumber}`,
-            { withCredentials: true }
-        );
+  try {
+    console.log('Making API call to fetch customer data...');
+    const response = await axios.get(
+      `${process.env.REACT_APP_API_URL}/api/advisory-member/search-customer/${mobileNumber}`,
+      { withCredentials: true }
+    );
+    console.log('API response received:', response.data);
 
-        if (response.data && response.data.customer) {
-            // Set customer object
-            setCustomer(response.data.customer);
+    if (response.data && response.data.customer) {
+      console.log('Customer data found:', response.data.customer);
+      // Set customer object
+      setCustomer(response.data.customer);
 
-            // Extract registeredBy name by removing the advisory member string
-            const fullRegisteredBy = response.data.customer.registeredBy || 'N/A';
-            const registeredByName = fullRegisteredBy.replace(/^Advisory Member: /, '');
+      // Extract registeredBy name by removing the advisory member string
+      const fullRegisteredBy = response.data.customer.registeredBy || 'N/A';
+      const registeredByName = fullRegisteredBy.replace(/^Advisory Member: /, '');
+      console.log('Registered By after processing:', registeredByName);
 
-            // Populate customerDetails with fetched data
-            setCustomerDetails({
-                fullName: response.data.customer.fullName || '',
-                alternateMobileNumber: response.data.customer.alternateMobileNumber || '',
-                registeredBy: registeredByName, // Use modified value here
-            });
+      // Populate customerDetails with fetched data
+      setCustomerDetails({
+        fullName: response.data.customer.fullName || '',
+        alternateMobileNumber: response.data.customer.alternateMobileNumber || '',
+        registeredBy: registeredByName, // Use modified value here
+      });
+      console.log('Customer details set:', {
+        fullName: response.data.customer.fullName,
+        alternateMobileNumber: response.data.customer.alternateMobileNumber,
+        registeredBy: registeredByName,
+      });
 
-            // Address details
-            const customerAddress = response.data.address || {};
-            setAddressDetails({
-                village: customerAddress.village || '',
-                pincode: customerAddress.pincode || '',
-                postOffice: customerAddress.postOffice || '',
-                taluka: customerAddress.taluka || '',
-                district: customerAddress.district || '',
-                state: customerAddress.state || '',
-                nearbyLocation: customerAddress.nearbyLocation || '',
-            });
+      // Address details
+      const customerAddress = response.data.address || {};
+      console.log('Customer address fetched:', customerAddress);
+      setAddressDetails({
+        village: customerAddress.village || '',
+        pincode: customerAddress.pincode || '',
+        postOffice: customerAddress.postOffice || '',
+        taluka: customerAddress.taluka || '',
+        district: customerAddress.district || '',
+        state: customerAddress.state || '',
+        nearbyLocation: customerAddress.nearbyLocation || '',
+      });
+      console.log('Address details set:', {
+        village: customerAddress.village,
+        pincode: customerAddress.pincode,
+        postOffice: customerAddress.postOffic,
+        taluka: customerAddress.taluka,
+        district: customerAddress.district,
+        state: customerAddress.state,
+        nearbyLocation: customerAddress.nearbyLocation,
+      });
 
-            // Fetch post offices if pincode exists
-            if (customerAddress.pincode) {
-                await fetchPostOffices(customerAddress.pincode);
-                // Optionally, update addressDetails with fetched post office info
-                // (if needed, depending on your app flow)
-            }
+      // Fetch post offices if pincode exists
+      if (customerAddress.pincode) {
+        console.log('Fetching post offices for pincode:', customerAddress.pincode);
+        await fetchPostOffices(customerAddress.pincode);
+        // Optionally, update addressDetails with fetched post office info
+      } else {
+        console.log('No pincode available to fetch post offices.');
+      }
 
-            // Save mobile and token
-            localStorage.setItem('mobileNumber', mobileNumber);
-            Cookies.set('frontendadvisorycustomertoken', response.data.customer._id);
+      // Save mobile and token
+      localStorage.setItem('mobileNumber', mobileNumber);
+      Cookies.set('frontendadvisorycustomertoken', response.data.customer._id);
+      console.log('Saved mobile and token:', {
+        mobileNumber,
+        token: response.data.customer._id,
+      });
 
-            // Check if address is empty
-            const isAddressEmpty = Object.values(customerAddress).every(
-                (field) => field.trim() === ''
-            );
-            setIsEditableAddress(isAddressEmpty);
-        } else {
-            setError('No customer details found.');
-        }
-    } catch (err) {
-        console.error('Error fetching customer details:', err);
-        setError('Failed to load customer details. Please try again later.');
-    } finally {
-        setLoading(false);
+      // Check if address is empty
+      const isAddressEmpty = Object.values(customerAddress).every(
+        (field) => typeof field === 'string' && field.trim() === ''
+      );
+      console.log('Is address empty?', isAddressEmpty);
+      setIsEditableAddress(isAddressEmpty);
+    } else {
+      console.log('No customer data found in response.');
+      setError('No customer details found.');
     }
-  };
+  } catch (err) {
+    console.error('Error fetching customer details:', err);
+    setError('Failed to load customer details. Please try again later.');
+  } finally {
+    console.log('fetchCustomerDetails completed.');
+    setLoading(false);
+  }
+};
 
   // Function to fetch post offices based on pincode
   const fetchPostOffices = async (pincode) => {
@@ -485,7 +513,7 @@ function AdvisorAdminseenewcxdetails() {
   useEffect(() => {
    const fetchUsername = async () => {
   try {
-    const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/advisory-Admin/dashboard`, {
+    const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/operational-member/dashbord`, {
       withCredentials: true,
     });
     const { advisoryMember } = response.data || {};
@@ -551,13 +579,12 @@ function AdvisorAdminseenewcxdetails() {
       paddingTop: '50px',
       color: 'white'                               // Default text color for readability
     }}>
-      <Sidebar />
       <Box style={{ flex: 1 }} className="p-4 rounded shadow">
      {/* Header Section */}
 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-  {/* <IconButton onClick={handleNavigateBack} color="primary">
+  <IconButton onClick={handleNavigateBack} color="primary">
     <ArrowBack style={{ color: 'white' }} /> 
-  </IconButton> */}
+  </IconButton>
 
   <Typography
     variant="h4"
@@ -571,9 +598,9 @@ function AdvisorAdminseenewcxdetails() {
   <Typography variant="h6" style={{ marginRight: '8px', fontFamily: 'Poppins, sans-serif', color: 'white' }}>
   Registered By: {customerDetails.registeredBy || 'N/A'}
 </Typography>
-    <IconButton onClick={toggleEditDetails} color="primary">
+    {/* <IconButton onClick={toggleEditDetails} color="primary">
       {isEditingDetails ? <Save style={{ color: 'white' }} /> : <Edit style={{ color: 'white' }} />}
-    </IconButton>
+    </IconButton> */}
   </div>
 </div>
     
@@ -882,9 +909,9 @@ function AdvisorAdminseenewcxdetails() {
       <Typography variant="h6" className="mb-2" style={{ display: 'flex', alignItems: 'center', fontSize: '1.5rem' }}>
         Address Details
         <div style={{ marginLeft: 'auto' }}>
-          <IconButton onClick={toggleEditAddress} color="primary">
+          {/* <IconButton onClick={toggleEditAddress} color="primary">
             {isEditingAddress ? <Save style={{ color: 'green', fontSize: '1.5rem' }} /> : <Edit style={{ color: 'green', fontSize: '1.5rem' }} />}
-          </IconButton>
+          </IconButton> */}
         </div>
       </Typography>
 
@@ -994,13 +1021,13 @@ function AdvisorAdminseenewcxdetails() {
           >
             Farming Details
             <div style={{ marginLeft: 'auto' }}>
-              <IconButton onClick={toggleEditFarming} color="primary">
+              {/* <IconButton onClick={toggleEditFarming} color="primary">
                 {isEditingFarming ? (
                   <Save style={{ color: 'green' }} />
                 ) : (
                   <Edit style={{ color: 'green' }} />
                 )}
-              </IconButton>
+              </IconButton> */}
             </div>
           </Typography>
 
@@ -1284,7 +1311,7 @@ function AdvisorAdminseenewcxdetails() {
   >
     <NearMe sx={{ fontSize: 30, marginRight: 10 }} />
     <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
-      Advisory Tagging
+      Operation Member Tagging
     </Typography>
   </DialogTitle>
   <Box sx={{ padding: 4, height: 'calc(100% - 80px)', overflowY: 'auto' }}>
@@ -1438,4 +1465,4 @@ const StyledButton = styled(Button)(({ theme }) => ({
   },
 }));
 
-export default AdvisorAdminseenewcxdetails;
+export default OperationMemberseenewcxdetails;

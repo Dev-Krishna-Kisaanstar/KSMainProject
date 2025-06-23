@@ -20,6 +20,7 @@ import icon from '../../../Assets/Logo/icon.png';
 import { Link, useLocation } from 'react-router-dom';
 import RollingText from '../../../Components/RollingTextSidebar/RollingText'; // Import the RollingText component
 import SearchIcon from '@mui/icons-material/Search';
+import { ShoppingCartIcon } from 'lucide-react';
 
 const drawerWidth = 240;
 
@@ -87,7 +88,7 @@ export default function Sidebar({ children }) {
     { text: 'Dashboard', icon: <HomeIcon fontSize="large" sx={{ fontSize: '40px' }} />, link: '/OperationMemberDashboard' },
     { text: 'Orders', icon: <SearchIcon fontSize="large" sx={{ fontSize: '40px' }} />, link: '/OppOrders' },
     { text: 'Confirmed Orders', icon: <ListIcon fontSize="large" sx={{ fontSize: '40px' }} />, link: '/OppOrdersConfirmed' },
-    // { text: 'My Orders', icon: <ShoppingCartIcon fontSize="large" sx={{ fontSize: '40px' }} />, link: '/MyOrders' },
+    { text: 'Search Cx', icon: <ShoppingCartIcon fontSize="large" sx={{ fontSize: '40px' }} />, link: '/OperationMemberSearchcx' },
   ];
 
   return (

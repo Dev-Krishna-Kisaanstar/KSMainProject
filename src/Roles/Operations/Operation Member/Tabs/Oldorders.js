@@ -13,7 +13,9 @@ import {
 } from "@mui/material";
 import { CheckCircle, CancelScheduleSend, DateRange, Person, AttachMoney, List } from "@mui/icons-material"; // Imported icons
 import axios from "axios";
+import { ToastContainer, toast } from "react-toastify";
 import { useParams } from "react-router-dom";
+import 'react-toastify/dist/ReactToastify.css';
 
 const Oldorders = () => {
     const { customerId } = useParams();
@@ -37,11 +39,11 @@ const Oldorders = () => {
             if (ordersList.length < 5) {
                 setHasMore(false);
             }
-            // Removed toast success
+            toast.success("Orders fetched successfully!");
         } catch (err) {
             const message = err.response?.data?.message || "Failed to fetch orders";
             setError(message);
-            // Removed toast error
+            toast.error(message);
         } finally {
             setLoading(false);
         }
@@ -84,40 +86,24 @@ const Oldorders = () => {
     }
 
     return (
-        <Container
-            maxWidth="lg"
-            sx={{
-                mt: 4,
-                padding: '30px',
-                borderRadius: '12px',
-                boxShadow: '0px 4px 20px rgba(0,0,0,0.1)',
-                backgroundColor: 'rgba(15, 21, 53, 0.7)', // Slight opacity for glass effect
-                backdropFilter: 'blur(10px)', // Apply blur effect
-                color: 'white', // Set text color to white for better visibility
-            }}
-        >
-            {/* Removed ToastContainer */}
+        <Container maxWidth="lg" sx={{
+            mt: 4,
+            padding: '30px',
+            borderRadius: '12px',
+            boxShadow: '0px 4px 20px rgba(0,0,0,0.1)',
+            backgroundColor: 'rgba(15, 21, 53, 0.7)', // Slight opacity for glass effect
+            backdropFilter: 'blur(10px)', // Apply blur effect
+            color: 'white', // Set text color to white for better visibility
+        }}>
+            <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} />
             <CssBaseline />
-            <Typography
-                variant="h4"
-                align="center"
-                sx={{
-                    fontFamily: 'Poppins, sans-serif',
-                    fontWeight: 'bold',
-                    mb: 4,
-                    color: 'white'
-                }}
-            >
+            <Typography variant="h4" align="center" sx={{
+                fontFamily: 'Poppins, sans-serif', fontWeight: 'bold', mb: 4, color: 'white'
+            }}>
                 Order History
             </Typography>
             {orders.length > 0 ? (
-                <TableContainer
-                    component={Paper}
-                    sx={{
-                        backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                        backdropFilter: 'blur(5px)'
-                    }}
-                >
+                <TableContainer component={Paper} sx={{ backgroundColor: 'rgba(255, 255, 255, 0.1)', backdropFilter: 'blur(5px)' }}>
                     <Table>
                         <TableHead>
                             <TableRow>

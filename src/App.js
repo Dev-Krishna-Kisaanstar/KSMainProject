@@ -106,6 +106,8 @@ import AdvisorAdminAddCx from './Roles/Advisor/AdvisorAdmin/AdvisorMemberAddCx';
 import OperationAdminSearchcx from './Roles/Operations/Operation Admin/OperationAdminSearchcx';
 import OperationAdminseenewcxdetails from './Roles/Operations/Operation Admin/OperationAdminseenewcxdetails';
 import OperationAdminAddCx from './Roles/Operations/Operation Admin/OperationAdminAddCx';
+import OperationMemberseenewcxdetails from './Roles/Operations/Operation Member/OperationMemberseenewcxdetails';
+import OperationMemberSearchcx from './Roles/Operations/Operation Member/OperationMemberSearchcx';
 
 // Function to get a cookie by name
 const getCookie = (name) => {
@@ -263,6 +265,10 @@ function App() {
             <Route path='/OppOrders' element={<ProtectedRouteOperationMember isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn}><OperationMemberOrders /></ProtectedRouteOperationMember>} />
             <Route path='/OppOrdersConfirmed' element={<ProtectedRouteOperationMember isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn}><ConfirmOrders /></ProtectedRouteOperationMember>} />
             <Route path='/AMAdvisorIDOrders/:operationalMemberId' element={<ProtectedRouteOperationMember isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn}><AMAdvisorIDOrders /></ProtectedRouteOperationMember>} />
+            <Route path='/OperationMemberSearchcx' element={<ProtectedRouteOperationMember isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn}><OperationMemberSearchcx /></ProtectedRouteOperationMember>} />
+            <Route path='/OperationMemberseenewcxdetails/:customerId' element={<ProtectedRouteOperationMember isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn}><OperationMemberseenewcxdetails /></ProtectedRouteOperationMember>} />
+
+
 
             {/* Logistic  */}
             <Route path='/LogisticDashboard' element={<ProtectedRouteLogisticAdmin isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn}><LogisticDashboard /></ProtectedRouteLogisticAdmin>} />

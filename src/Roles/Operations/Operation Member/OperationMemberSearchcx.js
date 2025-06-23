@@ -3,11 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { Box, TextField, Button, IconButton, InputAdornment, Alert, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
 import { Container, Row, Col } from 'react-bootstrap';
 import axios from 'axios';
-import Sidebar from '../../../Sidebars/Advisor/AdvisorAdmin/AdvisorAdminSidebar';
+import Sidebar from '../../../Sidebars/Operation/OperationMember/OperationMemberSidebar';
 import SearchIcon from '@mui/icons-material/Search';
 import SearchBackground from '../../../Assets/Background/Searchcx.webp';
 
-function AdvisorAdminSearchcx() {
+function OperationMemberSearchcx() {
   const [mobileNumber, setMobileNumber] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -84,7 +84,7 @@ function AdvisorAdminSearchcx() {
   };
 
   const handleViewDetails = (customerId) => {
-    navigate(`/AdvisorAdminseenewcxdetails/${customerId}`, { state: { mobileNumber } });
+    navigate(`/OperationMemberseenewcxdetails/${customerId}`, { state: { mobileNumber } });
   };
 
   const pageStyle = {
@@ -207,4 +207,4 @@ function AdvisorAdminSearchcx() {
   );
 }
 
-export default AdvisorAdminSearchcx;
+export default OperationMemberSearchcx;

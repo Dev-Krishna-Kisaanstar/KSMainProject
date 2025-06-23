@@ -12,7 +12,7 @@ import {
     TableHead,
     TableRow,
 } from "@mui/material";
-// Removed toast import
+import { ToastContainer, toast } from 'react-toastify';
 import { useParams } from 'react-router-dom';
 import { AccessAlarm, AdminPanelSettings, Message } from '@mui/icons-material';
 
@@ -48,7 +48,7 @@ function Tagging({ customerId }) {
                 }
             } catch (error) {
                 setError("Failed to fetch tagging details");
-                // Removed toast error
+                toast.error("Failed to fetch tagging details");
             }
         };
 
@@ -66,42 +66,25 @@ function Tagging({ customerId }) {
     }
 
     return (
-        <Container
-            maxWidth="lg"
-            sx={{
-                mt: 4,
-                padding: '30px',
-                borderRadius: '12px',
-                boxShadow: '0px 4px 20px rgba(0,0,0,0.1)',
-                backgroundColor: 'rgba(15, 21, 53, 0.7)',
-                backdropFilter: 'blur(10px)',
-                color: 'white',
-            }}
-        >
-            {/* Removed ToastContainer */}
+        <Container maxWidth="lg" sx={{
+            mt: 4,
+            padding: '30px',
+            borderRadius: '12px',
+            boxShadow: '0px 4px 20px rgba(0,0,0,0.1)',
+            backgroundColor: 'rgba(15, 21, 53, 0.7)',
+            backdropFilter: 'blur(10px)',
+            color: 'white',
+        }}>
+            <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} />
             {error && <Alert severity="error" sx={{ color: 'white' }}>{error}</Alert>}
-            <Typography
-                variant="h4"
-                align="center"
-                sx={{
-                    fontFamily: 'Poppins, sans-serif',
-                    fontWeight: 'bold',
-                    mb: 4,
-                    color: 'white',
-                }}
-            >
+            <Typography variant="h4" align="center" sx={{
+                fontFamily: 'Poppins, sans-serif', fontWeight: 'bold', mb: 4, color: 'white'
+            }}>
                 Tagging Details
             </Typography>
 
             {taggingRecords.length > 0 ? (
-                <TableContainer
-                    component={Paper}
-                    sx={{
-                        backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                        backdropFilter: 'blur(5px)',
-                        color: 'white',
-                    }}
-                >
+                <TableContainer component={Paper} sx={{ backgroundColor: 'rgba(255, 255, 255, 0.1)', backdropFilter: 'blur(5px)', color: 'white' }}>
                     <Table sx={{ minWidth: 650 }} aria-label="tagging records table">
                         <TableHead>
                             <TableRow>
@@ -138,12 +121,7 @@ function Tagging({ customerId }) {
                     </Table>
                 </TableContainer>
             ) : (
-                <Typography
-                    variant="h6"
-                    align="center"
-                    color="text.secondary"
-                    sx={{ fontWeight: 'bold', color: 'white' }}
-                >
+                <Typography variant="h6" align="center" color="text.secondary" sx={{ fontWeight: 'bold', color: 'white' }}>
                     No tagging records available.
                 </Typography>
             )}
