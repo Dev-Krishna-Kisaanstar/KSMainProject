@@ -259,22 +259,7 @@ function OperationMemberOrders() {
                             <TableCell style={tableCellStyle}>{order.district}</TableCell>
                             <TableCell style={tableCellStyle}>{order.pincode}</TableCell>
                             <TableCell style={tableCellStyle}>₹{order.totalAmount}</TableCell>
-                            <TableCell style={tableCellStyle}>
-                                <FormControl variant="outlined" fullWidth>
-                                    <InputLabel style={{ color: '#fff' }}>Status</InputLabel>
-                                    <Select
-                                        value={order.status}
-                                        onChange={(e) => handleStatusChange(order.orderId, e.target.value)}
-                                        disabled={updatedOrders.has(order.orderId)} // Disable if this order has been updated
-                                        style={{ color: '#fff', backgroundColor: '#3f51b5', borderRadius: 5 }}
-                                        MenuProps={{ PaperProps: { style: { backgroundColor: '#1E1E2F' } } }}
-                                    >
-                                        {statusOptions.map((status) => (
-                                            <MenuItem key={status} value={status} style={{ color: '#fff' }}>{status}</MenuItem>
-                                        ))}
-                                    </Select>
-                                </FormControl>
-                            </TableCell>
+                           <TableCell style={tableCellStyle}>{order.status}</TableCell>
                         </TableRow>
                     ))}
                 </TableBody>
