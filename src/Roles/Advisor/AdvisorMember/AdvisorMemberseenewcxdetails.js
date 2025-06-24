@@ -63,6 +63,8 @@ function AdvisorMemberseenewcxdetails() {
   const [toggle, setToggle] = useState(false);
   const [postOffices, setPostOffices] = useState([]);
   const [updatedCustomer, setUpdatedCustomer] = useState({});
+  const [fetchedAddress, setFetchedAddress] = useState(null);
+  const addressExists = Boolean(fetchedAddress); 
 
 
   const [addressDetails, setAddressDetails] = useState({
@@ -140,73 +142,76 @@ function AdvisorMemberseenewcxdetails() {
     }
   }, [mobileNumber]);
 
-  const fetchCustomerDetails = async (mobileNumber) => {
-    setLoading(true);
-    setError(''); // Clear previous errors
-    setCustomer(null); // Reset customer state
+ const fetchCustomerDetails = async (mobileNumber) => {
+  setLoading(true);
+  setError(''); // Clear previous errors
+  setCustomer(null); // Reset customer state
 
-    try {
-        const response = await axios.get(
-            `${process.env.REACT_APP_API_URL}/api/advisory-member/search-customer/${mobileNumber}`,
-            { withCredentials: true }
-        );
+  try {
+    const response = await axios.get(
+      `${process.env.REACT_APP_API_URL}/api/advisory-member/search-customer/${mobileNumber}`,
+      { withCredentials: true }
+    );
 
-        if (response.data && response.data.customer) {
-            // Set customer details
-            setCustomer(response.data.customer);
+    if (response.data && response.data.customer) {
+      // Set customer details
+      setCustomer(response.data.customer);
 
-            // Extract registeredBy name by removing the advisory member string
-            const fullRegisteredBy = response.data.customer.registeredBy || 'N/A';
-            const registeredByName = fullRegisteredBy.replace(/^Advisory Member: /, '');
+      // Extract registeredBy name
+      const fullRegisteredBy = response.data.customer.registeredBy || 'N/A';
+      const registeredByName = fullRegisteredBy.replace(/^Advisory Member: /, '');
 
-            setCustomerDetails({
-                fullName: response.data.customer.fullName || '',
-                alternateMobileNumber: response.data.customer.alternateMobileNumber || '',
-                registeredBy: registeredByName, // Use modified value here
-            });
+      setCustomerDetails({
+        fullName: response.data.customer.fullName || '',
+        alternateMobileNumber: response.data.customer.alternateMobileNumber || '',
+        registeredBy: registeredByName,
+      });
 
-            // Get address details
-            const customerAddress = response.data.address || {};
-            setAddressDetails({
-                village: customerAddress.village || '',
-                pincode: customerAddress.pincode || '',
-                postOffice: customerAddress.postOffice || '',
-                taluka: customerAddress.taluka || '',
-                district: customerAddress.district || '',
-                state: customerAddress.state || '',
-                nearbyLocation: customerAddress.nearbyLocation || '',
-            });
+      // Get address details
+      const customerAddress = response.data.address || {};
+      setAddressDetails({
+        village: customerAddress.village || '',
+        pincode: customerAddress.pincode || '',
+        postOffice: customerAddress.postOffice || '',
+        taluka: customerAddress.taluka || '',
+        district: customerAddress.district || '',
+        state: customerAddress.state || '',
+        nearbyLocation: customerAddress.nearbyLocation || '',
+      });
 
-            // Handle immediate population of fields based on fetched pincode
-            if (customerAddress.pincode) {
-                handleChangeAddress({
-                    target: { name: 'pincode', value: customerAddress.pincode }
-                });
+      // Set fetchedAddress only if address object has keys
+      if (customerAddress && Object.keys(customerAddress).length > 0) {
+        setFetchedAddress(customerAddress);
+      } else {
+        setFetchedAddress(null);
+      }
 
-                // Fetch post offices immediately after setting pincode
-                await fetchPostOffices(customerAddress.pincode);
-            }
+      // Handle immediate population of fields based on fetched pincode
+      if (customerAddress.pincode) {
+        handleChangeAddress({
+          target: { name: 'pincode', value: customerAddress.pincode }
+        });
+        await fetchPostOffices(customerAddress.pincode);
+      }
 
-            // Store mobile number and customer token in local storage and cookies
-            localStorage.setItem('mobileNumber', mobileNumber);
-            Cookies.set('frontendadvisorycustomertoken', response.data.customer._id);
+      // Store mobile number and customer token
+      localStorage.setItem('mobileNumber', mobileNumber);
+      Cookies.set('frontendadvisorycustomertoken', response.data.customer._id);
 
-            // Check if address fields are empty
-            const isAddressEmpty = Object.values(customerAddress).every(
-                (field) => field.trim() === ''
-            );
-            setIsEditableAddress(isAddressEmpty);
-        } else {
-            // No customer details found
-            setError('No customer details found.');
-        }
-    } catch (err) {
-        console.error('Error fetching customer details:', err);
-        setError('Failed to load customer details. Please try again later.');
-    } finally {
-        // Stop loading regardless of result
-        setLoading(false);
+      // Determine if address is empty (all fields are empty strings)
+      const isAddressEmpty = Object.values(customerAddress).every(
+        (field) => typeof field === 'string' && field.trim() === ''
+      );
+      setIsEditableAddress(isAddressEmpty);
+    } else {
+      setError('No customer details found.');
     }
+  } catch (err) {
+    console.error('Error fetching customer details:', err);
+    setError('Failed to load customer details. Please try again later.');
+  } finally {
+    setLoading(false);
+  }
 };
 
   // Function to fetch post offices based on the pincode
@@ -353,8 +358,8 @@ const fetchPostOffices = async (pincode) => {
   
       // Handle when switching to 'addAddress'
       if (newComponent === 'addAddress') {
-        // Refetch customer and farming details on component switch
-        fetchCustomerAndFarmingDetails(mobileNumber);
+         setFetchedAddress(null);
+        // fetchCustomerAndFarmingDetails(mobileNumber);
   
         // Reset addressDetails to empty values
         setAddressDetails({
@@ -366,6 +371,9 @@ const fetchPostOffices = async (pincode) => {
           district: '',
           state: '',
         });
+      }
+         if (newComponent === 'addAddress') {
+        fetchCustomerAndFarmingDetails(mobileNumber);
       }
     }
   };
@@ -919,106 +927,115 @@ const handleSubmitTagging = async () => {
   </Box>
 
   {/* // Render section for Address */}
-{activeComponent === 'addAddress' && (
-  <GlassEffectBox>
-    <AddressDetailsContainer>
-      <Typography variant="h6" className="mb-2" style={{ display: 'flex', alignItems: 'center', fontSize: '1.5rem' }}>
-        Address Details
-        <div style={{ marginLeft: 'auto' }}>
-          <IconButton onClick={toggleEditAddress} color="primary">
-            {isEditingAddress ? <Save style={{ color: 'green', fontSize: '1.5rem' }} /> : <Edit style={{ color: 'green', fontSize: '1.5rem' }} />}
-          </IconButton>
-        </div>
-      </Typography>
+  {activeComponent === 'addAddress' && (
+    <GlassEffectBox>
+      <AddressDetailsContainer>
+        <Typography variant="h6" className="mb-2" style={{ display: 'flex', alignItems: 'center', fontSize: '1.5rem' }}>
+          Address Details
+          <div style={{ marginLeft: 'auto' }}>
+            <IconButton onClick={toggleEditAddress} color="primary">
+              {isEditingAddress ? <Save style={{ color: 'green', fontSize: '1.5rem' }} /> : <Edit style={{ color: 'green', fontSize: '1.5rem' }} />}
+            </IconButton>
+          </div>
+        </Typography>
 
-      <Grid container spacing={2}>
-        <Grid item xs={12} md={6}>
-          <StyledTextField
-            label="Village"
-            variant="outlined"
-            fullWidth
-            name="village"
-            value={addressDetails.village}
-            onChange={handleChangeAddress}
-            InputProps={{ readOnly: !isEditableAddress }}
-          />
-          <StyledTextField
-            label="Pincode"
-            variant="outlined"
-            fullWidth
-            name="pincode"
-            value={addressDetails.pincode}
-            onChange={handleChangeAddress}
-            InputProps={{ readOnly: !isEditableAddress }}
-          />
-          <StyledTextField
-            label="Post Office"
-            variant="outlined"
-            fullWidth
-            name="postOffice"
-            select
-            value={addressDetails.postOffice}
-            onChange={handlePostOfficeChange}
-          >
-            {availablePostOffices.length > 0 ? (
-              availablePostOffices.map((office) => (
-                <MenuItem key={office.officename} value={office.officename}>
-                  {office.officename}
-                </MenuItem>
-              ))
-            ) : (
-              <MenuItem disabled>No Post Offices Available</MenuItem>
-            )}
-          </StyledTextField>
-                    <StyledTextField
-                        label="Taluka"
-                        variant="outlined"
-                        fullWidth
-                        name="taluka"
-                        value={addressDetails.taluka}
-                        onChange={handleChangeAddress}
-                        InputProps={{ readOnly: !isEditableAddress }}
-                    />
-                    <StyledTextField
-                        label="State"
-                        variant="outlined"
-                        fullWidth
-                        name="state"
-                        value={addressDetails.state}
-                        onChange={handleChangeAddress}
-                        InputProps={{ readOnly: !isEditableAddress }}
-                    />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                    <StyledTextField
-                        label="Nearby Location"
-                        variant="outlined"
-                        fullWidth
-                        name="nearbyLocation"
-                        value={addressDetails.nearbyLocation}
-                        onChange={handleChangeAddress}
-                        InputProps={{ readOnly: !isEditableAddress }}
-                    />
-                    <StyledTextField
-                        label="District"
-                        variant="outlined"
-                        fullWidth
-                        name="district"
-                        value={addressDetails.district}
-                        onChange={handleChangeAddress}
-                        InputProps={{ readOnly: !isEditableAddress }}
-                    />
-                </Grid>
-            </Grid>
+        <Grid container spacing={2}>
+          <Grid item xs={12} md={6}>
+            <StyledTextField
+              label="Village"
+              variant="outlined"
+              fullWidth
+              name="village"
+              value={addressDetails.village}
+              onChange={handleChangeAddress}
+              InputProps={{ readOnly: !isEditableAddress }}
+            />
+            <StyledTextField
+              label="Pincode"
+              variant="outlined"
+              fullWidth
+              name="pincode"
+              value={addressDetails.pincode}
+              onChange={handleChangeAddress}
+              InputProps={{ readOnly: !isEditableAddress }}
+            />
+            <StyledTextField
+              label="Post Office"
+              variant="outlined"
+              fullWidth
+              name="postOffice"
+              select
+              value={addressDetails.postOffice}
+              onChange={handlePostOfficeChange}
+            >
+              {availablePostOffices.length > 0 ? (
+                availablePostOffices.map((office) => (
+                  <MenuItem key={office.officename} value={office.officename}>
+                    {office.officename}
+                  </MenuItem>
+                ))
+              ) : (
+                <MenuItem disabled>No Post Offices Available</MenuItem>
+              )}
+            </StyledTextField>
+                      <StyledTextField
+                          label="Taluka"
+                          variant="outlined"
+                          fullWidth
+                          name="taluka"
+                          value={addressDetails.taluka}
+                          onChange={handleChangeAddress}
+                          InputProps={{ readOnly: !isEditableAddress }}
+                      />
+                      <StyledTextField
+                          label="State"
+                          variant="outlined"
+                          fullWidth
+                          name="state"
+                          value={addressDetails.state}
+                          onChange={handleChangeAddress}
+                          InputProps={{ readOnly: !isEditableAddress }}
+                      />
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                      <StyledTextField
+                          label="Nearby Location"
+                          variant="outlined"
+                          fullWidth
+                          name="nearbyLocation"
+                          value={addressDetails.nearbyLocation}
+                          onChange={handleChangeAddress}
+                          InputProps={{ readOnly: !isEditableAddress }}
+                      />
+                      <StyledTextField
+                          label="District"
+                          variant="outlined"
+                          fullWidth
+                          name="district"
+                          value={addressDetails.district}
+                          onChange={handleChangeAddress}
+                          InputProps={{ readOnly: !isEditableAddress }}
+                      />
+                  </Grid>
+              </Grid>
 
-            {isEditableAddress && (
-                <StyledButton variant="contained" onClick={toggleEditAddress}>
-                    {Object.values(addressDetails).some(field => field.trim()) ? 'Update Address' : 'Save Address'}
-                </StyledButton>
-            )}
-        </AddressDetailsContainer>
-    </GlassEffectBox>
+              {isEditableAddress && (
+  <StyledButton
+    variant="contained"
+    onClick={() => {
+      if (addressExists) {
+        handleUpdateAddress();
+      } else {
+        handleSubmitAddress();
+      }
+    }}
+  >
+    {addressExists ? 'Update Address' : 'Save Address'}
+  </StyledButton>
 )}
+          </AddressDetailsContainer>
+      </GlassEffectBox>
+  )}
         </div>
 
     {/* Farming Details Section */}
