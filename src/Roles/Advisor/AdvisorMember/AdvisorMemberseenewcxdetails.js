@@ -498,31 +498,33 @@ const toggleEditFarming = () => {
   };
 
   const handleRefresh = async () => {
-    setLoading(true);
-    setError('');
-    try {
-      const response = await axios.put(
-        `${process.env.REACT_APP_API_URL}/api/advisory-member/regenerate-password/${customerId}`,
-        {},
-        { withCredentials: true }
-      );
+  setLoading(true);
+  setError('');
+  try {
+    const response = await axios.put(
+      `${process.env.REACT_APP_API_URL}/api/advisory-member/regenerate-password/${customerId}`,
+      {},
+      { withCredentials: true }
+    );
 
-      if (response.status === 200) {
-        const newPassword = response.data.actualPassword;
-        setPassword(newPassword);
-        toast.success('Password regenerated successfully!');
-        fetchFarmingDetails();
-      } else {
-        setError('Failed to regenerate password.');
-      }
-    } catch (error) {
-      console.error('Error regenerating password:', error);
+    if (response.status === 200) {
+      const newPassword = response.data.actualPassword;
+      setPassword(newPassword);
+      toast.success('Password regenerated successfully!');
+      
+      // Call fetchFarmingDetails with current mobileNumber
+      fetchFarmingDetails(mobileNumber);
+    } else {
       setError('Failed to regenerate password.');
-      toast.error('Failed to regenerate password.');
-    } finally {
-      setLoading(false);
     }
-  };
+  } catch (error) {
+    console.error('Error regenerating password:', error);
+    setError('Failed to regenerate password.');
+    toast.error('Failed to regenerate password.');
+  } finally {
+    setLoading(false);
+  }
+};
 
   const [username, setUsername] = useState('');
 
