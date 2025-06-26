@@ -88,7 +88,7 @@ function Tagging({ customerId }) {
                     <Table sx={{ minWidth: 650 }} aria-label="tagging records table">
                         <TableHead>
                             <TableRow>
-                                <TableCell sx={{ color: 'white' }}>Advisor Name</TableCell>
+                                <TableCell sx={{ color: 'white' }}>Name</TableCell>
                                 <TableCell sx={{ color: 'white' }}>Date and Time</TableCell>
                                 <TableCell sx={{ color: 'white' }}>Service 1</TableCell>
                                 <TableCell sx={{ color: 'white' }}>Service 2</TableCell>

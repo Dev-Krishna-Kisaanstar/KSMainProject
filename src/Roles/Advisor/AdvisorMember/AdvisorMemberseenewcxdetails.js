@@ -65,6 +65,7 @@ function AdvisorMemberseenewcxdetails() {
   const [updatedCustomer, setUpdatedCustomer] = useState({});
   const [fetchedAddress, setFetchedAddress] = useState(null);
   const addressExists = Boolean(fetchedAddress); 
+  const [hasFarmingData, setHasFarmingData] = useState(false);
 
 
   const [addressDetails, setAddressDetails] = useState({
@@ -337,6 +338,19 @@ const fetchPostOffices = async (pincode) => {
       setLoading(false);
     }
   };
+
+  const isAddressComplete = () => {
+  const { village, pincode, postOffice, nearbyLocation, taluka, district, state } = addressDetails;
+  return (
+    village.trim() !== '' &&
+    pincode.trim() !== '' &&
+    postOffice.trim() !== '' &&
+    nearbyLocation.trim() !== '' &&
+    taluka.trim() !== '' &&
+    district.trim() !== '' &&
+    state.trim() !== ''
+  );
+};
 
   const fetchCustomerAndFarmingDetails = (mobileNumber) => {
     if (mobileNumber) {
@@ -818,27 +832,35 @@ const handleSubmitTagging = async () => {
     >
       <LocationOn style={{ color: activeComponent === 'cxNearbyOrders' ? 'white' : 'green', marginRight: '8px' }} /> Cx Nearby Orders
     </ToggleButton>
-    <ToggleButton
-      value="placeOrder"
-      aria-label="place order"
-      sx={{
-        height: 50,
-        borderRadius: '20px',
-        border: '2px solid green',
-        backgroundColor: activeComponent === 'placeOrder' ? 'green' : '#0f1535',
-        color: activeComponent === 'placeOrder' ? 'white' : 'white',
-        '&:hover': {
-          backgroundColor: activeComponent !== 'placeOrder' ? 'rgba(0, 255, 0, 0.2)' : 'green',
-          color: 'black',  // Change text color to black on hover for inactive tabs
-          borderColor: 'green',
-        },
-        display: 'flex',
-        alignItems: 'center',
-        padding: '0 16px',
-      }}
-    >
-      <ShoppingCart style={{ color: activeComponent === 'placeOrder' ? 'white' : 'green', marginRight: '8px' }} /> Place Order
-    </ToggleButton>
+   <ToggleButton
+  value="placeOrder"
+  aria-label="place order"
+  sx={{
+    height: 50,
+    borderRadius: '20px',
+    border: '2px solid green',
+    backgroundColor: activeComponent === 'placeOrder' ? 'green' : '#0f1535',
+    color: activeComponent === 'placeOrder' ? 'white' : 'white',
+    '&:hover': {
+      backgroundColor: activeComponent !== 'placeOrder' ? 'rgba(0, 255, 0, 0.2)' : 'green',
+      color: 'black',
+      borderColor: 'green',
+    },
+    display: 'flex',
+    alignItems: 'center',
+    padding: '0 16px',
+  }}
+  disabled={!isAddressComplete()}
+  onClick={() => {
+    if (isAddressComplete()) {
+      // Place order logic here
+    } else {
+      toast.warning('Please fill all address fields before placing order.');
+    }
+  }}
+>
+  <ShoppingCart style={{ color: activeComponent === 'placeOrder' ? 'white' : 'green', marginRight: '8px' }} /> Place Order
+</ToggleButton>
     {/* <ToggleButton
   value="ProductListAdvisory" // Ensure the value matches the component name for product list
   aria-label="ProductListAdvisory"
@@ -1303,16 +1325,18 @@ const handleSubmitTagging = async () => {
 
           {/* Show save/update button only when in edit mode */}
           {isEditableFarming && (
-            <StyledButton
-              variant="contained"
-              onClick={() => {
-                toggleEditFarming();
-              }}
-              style={{ color: 'white' }}
-            >
-              {Object.values(farmingDetails).some((field) => field) ? 'Update Farming Details' : 'Save Farming Details'}
-            </StyledButton>
-          )}
+  <StyledButton
+    onClick={() => {
+      if (hasFarmingData) {
+        handleUpdateFarmingDetails();
+      } else {
+        handleSubmitFarmingDetails();
+      }
+    }}
+  >
+    {hasFarmingData ? 'Update Farming Details' : 'Add Farming Details'}
+  </StyledButton>
+)}
         </GlassEffectBox>
       )}
 
@@ -1484,7 +1508,6 @@ const StyledTextField = styled(TextField)(({ theme }) => ({
   },
   '& .MuiInputLabel-root': {
     color: 'white',
-    fontSize: '1.1rem', // Increased font size for label
   },
   '& .MuiOutlinedInput-notchedOutline': {
     borderColor: 'white',
