@@ -15,13 +15,13 @@ const tableHeaderCellStyle = {
     color: 'white',
 };
 
-function AdvisorIDOrders() {
+function AdvisorAdminIDOrders() {
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const { advisorMemberId } = useParams();
     
-    console.log("Operational Member ID from URL params:", advisorMemberId); // Log the advisorMemberId
+    console.log("Advisor Member ID from URL params:", advisorMemberId); // Log the advisorMemberId
 
     // Set today's date as default
     const today = new Date();
@@ -30,42 +30,33 @@ function AdvisorIDOrders() {
     const [endDate, setEndDate] = useState(formattedToday); 
     const status = ''; 
 
-    const fetchOrders = useCallback(async (startDate, endDate) => {
-        if (!advisorMemberId) {
-            console.error("No advisorMemberId available. API call not made.");
-            return;
-        }
-    
-        console.log(`Preparing to fetch orders for advisorMemberId: ${advisorMemberId} with startDate: ${startDate}, endDate: ${endDate}`);
-        
-        setLoading(true);
-        setError(null);
-        try {
-            console.log("Making API call...");
-            const response = await axios.post(
-                `${process.env.REACT_APP_API_URL}/api/operational-admin/track-orders?orderStatus=${encodeURIComponent(status)}&startDate=${startDate}&endDate=${endDate}`,
-                null,
-                {
-                    withCredentials: true,
-                }
-            );
-    
-            console.log("API response received:", response.data);
-            if (response.data && response.data.orders) {
-                setOrders(response.data.orders);
-                console.log("Orders fetched successfully:", response.data.orders);
-            } else {
-                setOrders([]);
-                console.warn("No orders found in response");
-            }
-        } catch (error) {
-            console.error("Error fetching orders:", error);
-            setError("Could not fetch orders. Please try again.");
-        } finally {
-            setLoading(false);
-            console.log("API call completed.");
-        }
-    }, [advisorMemberId]);
+ const fetchOrders = useCallback(async (startDate, endDate) => {
+  if (!advisorMemberId) {
+    console.error("No advisorMemberId available. API call not made.");
+    return;
+  }
+  console.log(`Fetching orders for advisorMemberId: ${advisorMemberId} with startDate: ${startDate} and endDate: ${endDate}`);
+  setLoading(true);
+  setError(null);
+  try {
+    const response = await axios.post(
+      `${process.env.REACT_APP_API_URL}/api/operational-member/orders/${advisorMemberId}?startDate=${startDate}&endDate=${endDate}`,
+      null,
+      { withCredentials: true }
+    );
+    console.log("API response:", response.data);
+    if (response.data && response.data.orders) {
+      setOrders(response.data.orders);
+    } else {
+      setOrders([]);
+    }
+  } catch (error) {
+    console.error("Error fetching orders:", error);
+    setError("Could not fetch orders. Please try again.");
+  } finally {
+    setLoading(false);
+  }
+}, [advisorMemberId]);
 
     useEffect(() => {
         console.log("Component mounted. Fetching orders for today's date.");
@@ -180,4 +171,4 @@ const contentStyle = {
     marginLeft: '20px',
 };
 
-export default AdvisorIDOrders;
+export default AdvisorAdminIDOrders;

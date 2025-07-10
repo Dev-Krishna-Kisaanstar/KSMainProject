@@ -140,7 +140,7 @@ function AdvisorAdminAdvisoryOrders() {
     };
 
     const viewdetails = (id) => {
-        navigate(`/Ordersbyadvisortoadmin/${id}`); // Correctly navigate to the details page with the ID
+        navigate(`/AdvisorAdminIDOrders/${id}`); // Correctly navigate to the details page with the ID
     };
 
     const renderOrdersByAdvisor = () => (

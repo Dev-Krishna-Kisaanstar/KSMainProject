@@ -60,211 +60,211 @@ function ProductPage() {
 
   const detailsBoxRef = useRef(null); // Reference to the details box
 
- // Automatically cycle through product images
-useEffect(() => {
-  const interval = setInterval(() => {
-    if (product.productImages && product.productImages.length > 0) {
-      // Ensure productImages is defined and has elements
-      setSelectedImage((prevImage) => {
-        const currentIndex = product.productImages.indexOf(prevImage);
-        const nextIndex = (currentIndex + 1) % product.productImages.length;
-        return product.productImages[nextIndex];
-      });
-    }
-  }, 3000); // Change image every 3 seconds
-  return () => clearInterval(interval); // Cleanup interval on component unmount
-}, [product.productImages]);
+  // Automatically cycle through product images
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (product.productImages && product.productImages.length > 0) {
+        // Ensure productImages is defined and has elements
+        setSelectedImage((prevImage) => {
+          const currentIndex = product.productImages.indexOf(prevImage);
+          const nextIndex = (currentIndex + 1) % product.productImages.length;
+          return product.productImages[nextIndex];
+        });
+      }
+    }, 3000); // Change image every 3 seconds
+    return () => clearInterval(interval); // Cleanup interval on component unmount
+  }, [product.productImages]);
 
-// Calculate discount percentage
-const discountPercentage = product.toggleSell
-  ? Math.round(((product.MRP - product.sellPrice) / product.MRP) * 100)
-  : null;
+  // Calculate discount percentage
+  const discountPercentage = product.toggleSell
+    ? Math.round(((product.MRP - product.sellPrice) / product.MRP) * 100)
+    : null;
 
-// Fetch related products
-const fetchRelatedProducts = async (category) => {
-  try {
-    const relatedProductsResponse = await axios.get(
-      `${process.env.REACT_APP_API_URL}/api/customers/get-products?category=${category}`,
-      { withCredentials: true }
-    );
-    setRelatedProducts(relatedProductsResponse.data.products || []); // Default to an empty array if undefined
-  } catch (error) {
-    console.error('Error fetching related products:', error);
-  }
-};
-
-// Fetch product details
-// Fetch product details
-useEffect(() => {
-  const fetchProduct = async () => {
+  // Fetch related products
+  const fetchRelatedProducts = async (category) => {
     try {
-      console.log("Fetching product with ID:", id); // Log the product ID being fetched
-      const response = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/customers/get-products/${id}`,
+      const relatedProductsResponse = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/customers/get-products?category=${category}`,
         { withCredentials: true }
       );
-
-      console.log("Response received:", response.data); // Log the entire response data
-
-      const productData = response.data.product;
-
-      // Check if productData is null or undefined
-      if (!productData) {
-        console.error("Product data is null or undefined");
-        navigate('/Fourzerofour'); // Redirect to 404 page
-        return;
-      }
-
-      console.log("Product data:", productData); // Log the product data
-
-      // Check stock status
-      const stockStatus = productData?.stock?.stockListedForSell ?? null;
-      if (stockStatus === null) {
-        console.error("stockListedForSell is null");
-        navigate('/Fourzerofour'); // Redirect to 404 page
-        return;
-      }
-
-      // Ensure productImages is an array
-      if (!Array.isArray(productData.productImages)) {
-        console.warn("productImages is not an array, defaulting to empty array");
-        productData.productImages = []; // Default to an empty array if undefined
-      }
-
-      setProduct(productData);
-      setSelectedImage(productData.productImages[0] || ''); // Fallback to an empty string if no images
-      dispatch(setSelectedProduct(productData));
-      setLoading(false);
-
-      // Fetch related products
-      fetchRelatedProducts(productData.category);
-    } catch (err) {
-      console.error("Error fetching product:", err); // Log any errors that occur during the fetch
-      navigate('/Fourzerofour'); // Redirect to 404 page on error
+      setRelatedProducts(relatedProductsResponse.data.products || []); // Default to an empty array if undefined
+    } catch (error) {
+      console.error('Error fetching related products:', error);
     }
   };
 
-  fetchProduct();
-}, [id, dispatch, navigate]);
+  // Fetch product details
+  // Fetch product details
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        console.log("Fetching product with ID:", id); // Log the product ID being fetched
+        const response = await axios.get(
+          `${process.env.REACT_APP_API_URL}/api/customers/get-products/${id}`,
+          { withCredentials: true }
+        );
 
-// Handle adding product to cart
-const handleAddToCart = async () => {
-  if (product) {
-    const customerId = localStorage.getItem('customerId');
-    const productToAdd = {
-      productId: id,
-      quantity: Number(quantity),
-      price: product.toggleSell ? product.sellPrice : product.MRP,
-      imageURL: product.productImages[0] || '',
-      name: product.productName,
-      customerId: customerId,
+        console.log("Response received:", response.data); // Log the entire response data
+
+        const productData = response.data.product;
+
+        // Check if productData is null or undefined
+        if (!productData) {
+          console.error("Product data is null or undefined");
+          navigate('/Fourzerofour'); // Redirect to 404 page
+          return;
+        }
+
+        console.log("Product data:", productData); // Log the product data
+
+        // Check stock status
+        const stockStatus = productData?.stock?.stockListedForSell ?? null;
+        if (stockStatus === null) {
+          console.error("stockListedForSell is null");
+          navigate('/Fourzerofour'); // Redirect to 404 page
+          return;
+        }
+
+        // Ensure productImages is an array
+        if (!Array.isArray(productData.productImages)) {
+          console.warn("productImages is not an array, defaulting to empty array");
+          productData.productImages = []; // Default to an empty array if undefined
+        }
+
+        setProduct(productData);
+        setSelectedImage(productData.productImages[0] || ''); // Fallback to an empty string if no images
+        dispatch(setSelectedProduct(productData));
+        setLoading(false);
+
+        // Fetch related products
+        fetchRelatedProducts(productData.category);
+      } catch (err) {
+        console.error("Error fetching product:", err); // Log any errors that occur during the fetch
+        navigate('/Fourzerofour'); // Redirect to 404 page on error
+      }
     };
 
-    try {
-      const response = await axios.post(
-        `${process.env.REACT_APP_API_URL}/api/cart/add`,
-        productToAdd,
-        { withCredentials: true }
-      );
+    fetchProduct();
+  }, [id, dispatch, navigate]);
 
-      if (response.status === 200) {
-        alert(response.data.message || 'Product added to cart successfully!');
-        setQuantity(1);
-        setCartSidebarOpen(true);
-      } else {
-        throw new Error('API responded with a non-success status');
-      }
-    } catch (error) {
-      const errorMessage = error.response
-        ? error.response.data.message || 'Failed to add product to cart'
-        : error.message || 'Failed to add product to cart';
-      setError(errorMessage);
+  // Handle adding product to cart
+  const handleAddToCart = async () => {
+    if (product) {
+      const customerId = localStorage.getItem('customerId');
+      const productToAdd = {
+        productId: id,
+        quantity: Number(quantity),
+        price: product.toggleSell ? product.sellPrice : product.MRP,
+        imageURL: product.productImages[0] || '',
+        name: product.productName,
+        customerId: customerId,
+      };
 
-      // Check for authentication error and redirect to login
-      if (error.response && error.response.status === 401) {
-        navigate('/login'); // Directly redirect to the login page
+      try {
+        const response = await axios.post(
+          `${process.env.REACT_APP_API_URL}/api/cart/add`,
+          productToAdd,
+          { withCredentials: true }
+        );
+
+        if (response.status === 200) {
+          alert(response.data.message || 'Product added to cart successfully!');
+          setQuantity(1);
+          setCartSidebarOpen(true);
+        } else {
+          throw new Error('API responded with a non-success status');
+        }
+      } catch (error) {
+        const errorMessage = error.response
+          ? error.response.data.message || 'Failed to add product to cart'
+          : error.message || 'Failed to add product to cart';
+        setError(errorMessage);
+
+        // Check for authentication error and redirect to login
+        if (error.response && error.response.status === 401) {
+          navigate('/login'); // Directly redirect to the login page
+        }
       }
+    } else {
+      setError('Product not found');
     }
-  } else {
-    setError('Product not found');
-  }
-};
+  };
 
-// Handle "Notify Me" functionality
-const handleNotifyme = async () => {
-  if (product) {
-    const customerId = localStorage.getItem('customerId');
-    const productToAdd = {
-      productId: id,
-      customerId: customerId,
-    };
+  // Handle "Notify Me" functionality
+  const handleNotifyme = async () => {
+    if (product) {
+      const customerId = localStorage.getItem('customerId');
+      const productToAdd = {
+        productId: id,
+        customerId: customerId,
+      };
 
-    try {
-      const response = await axios.post(
-        `${process.env.REACT_APP_API_URL}/api/customers/notify-me/${id}`,
-        productToAdd,
-        { withCredentials: true }
-      );
+      try {
+        const response = await axios.post(
+          `${process.env.REACT_APP_API_URL}/api/customers/notify-me/${id}`,
+          productToAdd,
+          { withCredentials: true }
+        );
 
-      if (response.status === 201) {
-        toast.success('We have received your request. We will inform you when this product is back in stock.');
-        setButtonText('We got your request ✅'); // Change button text
-        setIsNotified(true); // Set notified state
+        if (response.status === 201) {
+          toast.success('We have received your request. We will inform you when this product is back in stock.');
+          setButtonText('We got your request ✅'); // Change button text
+          setIsNotified(true); // Set notified state
 
-        // Redirect after a short delay
-        setTimeout(() => {
-          navigate('/'); // Redirect to home page or shop page
-        }, 2000); // 2 seconds delay
-      } else if (response.status === 400 && response.data.message === "You have already requested to be notified for this product.") {
-        toast.info('We got your request. We will inform you when this product gets back in stock.');
-        setButtonText('We got your request ✅'); // Change button text
-        setIsNotified(true); // Set notified state
+          // Redirect after a short delay
+          setTimeout(() => {
+            navigate('/'); // Redirect to home page or shop page
+          }, 2000); // 2 seconds delay
+        } else if (response.status === 400 && response.data.message === "You have already requested to be notified for this product.") {
+          toast.info('We got your request. We will inform you when this product gets back in stock.');
+          setButtonText('We got your request ✅'); // Change button text
+          setIsNotified(true); // Set notified state
+        }
+      } catch (error) {
+        const errorMessage = error.response ? error.response.data.message || 'Failed to add product to notifications' : error.message || 'Failed to add product to notifications';
+        toast.error(errorMessage);
       }
-    } catch (error) {
-      const errorMessage = error.response ? error.response.data.message || 'Failed to add product to notifications' : error.message || 'Failed to add product to notifications';
-      toast.error(errorMessage);
+    } else {
+      toast.error('Product not found');
     }
-  } else {
-    toast.error('Product not found');
-  }
-};
+  };
 
-// ITEMS array for rendering product details
-const ITEMS = [
-  {
-    title: 'Dosage Guidelines',
-    subtitle: 'Recommended Dosage',
-    content: product?.doses || ['No dosage information available'],
-  },
-  {
-    title: 'Features and Benefits',
-    subtitle: 'Key Advantages',
-    content: product?.featuresAndBenefits || ['No features available'],
-  },
-  {
-    title: 'How to Use',
-    subtitle: 'Usage Instructions',
-    content: product?.howToUse || ['No usage instructions available'],
-  },
-  {
-    title: 'Mode of Use',
-    subtitle: 'Application Method',
-    content: product?.modeOfUse ? [product.modeOfUse] : ['No application method available'],
-  },
-  {
-    title: 'Chemical Composition',
-    subtitle: 'Ingredients Breakdown',
-    content: product?.productChemicalComposition ? [product.productChemicalComposition] : ['No composition information available'],
-  },
-  {
-    title: 'FAQs',
-    subtitle: 'Common Questions',
-    content: product?.faqs || ['No FAQs available'],
-  },
-];
+  // ITEMS array for rendering product details
+  const ITEMS = [
+    {
+      title: 'Dosage Guidelines',
+      subtitle: 'Recommended Dosage',
+      content: product?.doses || ['No dosage information available'],
+    },
+    {
+      title: 'Features and Benefits',
+      subtitle: 'Key Advantages',
+      content: product?.featuresAndBenefits || ['No features available'],
+    },
+    {
+      title: 'How to Use',
+      subtitle: 'Usage Instructions',
+      content: product?.howToUse || ['No usage instructions available'],
+    },
+    {
+      title: 'Mode of Use',
+      subtitle: 'Application Method',
+      content: product?.modeOfUse ? [product.modeOfUse] : ['No application method available'],
+    },
+    {
+      title: 'Chemical Composition',
+      subtitle: 'Ingredients Breakdown',
+      content: product?.productChemicalComposition ? [product.productChemicalComposition] : ['No composition information available'],
+    },
+    {
+      title: 'FAQs',
+      subtitle: 'Common Questions',
+      content: product?.faqs || ['No FAQs available'],
+    },
+  ];
 
-// Keyframes for the rotating snake animation
-const snakeAnimation = keyframes`
+  // Keyframes for the rotating snake animation
+  const snakeAnimation = keyframes`
 0% {
   border-image-source: linear-gradient(90deg, #4BAF47, #4BAF47, transparent, transparent);
   border-image-slice: 1;
@@ -287,24 +287,24 @@ const snakeAnimation = keyframes`
 }
 `;
 
-// Increment and decrement quantity
-const incrementQuantity = () => {
-  setQuantity((prev) => Math.min(prev + 1, 5));
-};
+  // Increment and decrement quantity
+  const incrementQuantity = () => {
+    setQuantity((prev) => Math.min(prev + 1, 5));
+  };
 
-const decrementQuantity = () => {
-  setQuantity((prev) => Math.max(prev - 1, 1));
-};
+  const decrementQuantity = () => {
+    setQuantity((prev) => Math.max(prev - 1, 1));
+  };
 
-// Toggle description visibility
-const toggleDescription = () => {
-  setShowFullDescription((prev) => !prev);
-};
+  // Toggle description visibility
+  const toggleDescription = () => {
+    setShowFullDescription((prev) => !prev);
+  };
 
-// Handle tab change
-const handleTabChange = (event, newValue) => {
-  setAindex(newValue);
-};
+  // Handle tab change
+  const handleTabChange = (event, newValue) => {
+    setAindex(newValue);
+  };
 
   return (
     <>
@@ -840,7 +840,15 @@ const handleTabChange = (event, newValue) => {
                                   )}
                                 </div>
                               ) : (
-                                <Typography variant="body1">{item.content.join(', ')}</Typography>
+                                <Typography variant="body1">
+                                  <ul style={{ paddingLeft: '20px', margin: 0 }}>
+                                    {item.content.map((point, index) => (
+                                      <li key={index} style={{ marginBottom: '8px' }}>
+                                        {point}
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </Typography>
                               )}
                             </motion.div>
                           ) : null

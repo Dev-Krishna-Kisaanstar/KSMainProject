@@ -93,7 +93,7 @@ import OperationMemberOrders from './Roles/Operations/Operation Member/Operation
 import OppOrders from './Roles/Operations/Operation Admin/Orders'
 import ConfirmOrders from './Roles/Operations/Operation Member/ConfirmOrders';
 import AdvisorIDOrders from './Roles/Operations/Operation Admin/AdvisorIDOrders';
-import Ordersbyadvisortoadmin from './Roles/Advisor/AdvisorAdmin/AdvisorIDOrders';
+import AdvisorAdminIDOrders from './Roles/Advisor/AdvisorAdmin/AdvisorAdminIDOrders';
 import AMAdvisorIDOrders from './Roles/Operations/Operation Member/AdvisorIDOrders';
 import LogisticLogin from './Loginandregistration/LogisticRegisterandLogin/LogisticLogin';
 import LogisticRegister from './Loginandregistration/LogisticRegisterandLogin/LogisticRegister';
@@ -241,7 +241,7 @@ function App() {
             <Route path='/AdvisorMemberList' element={<ProtectedRouteAdmin isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn}><AdvisorMemberList /></ProtectedRouteAdmin>} />
             <Route path='/ToggleLogin/:customerId' element={<ProtectedRouteAdmin isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn}><ToggleLogin /></ProtectedRouteAdmin>} />
             <Route path='/AllAdvisoryOrders' element={<ProtectedRouteAdmin isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn}><AdvisorAdminAdvisoryOrders /></ProtectedRouteAdmin>} />
-            <Route path='/Ordersbyadvisortoadmin/:advisorMemberId' element={<ProtectedRouteAdmin isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn}><Ordersbyadvisortoadmin /></ProtectedRouteAdmin>} />
+            <Route path='/AdvisorAdminIDOrders/:advisorMemberId' element={<ProtectedRouteAdmin isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn}><AdvisorAdminIDOrders /></ProtectedRouteAdmin>} />
             <Route path='/AdvisorAdminSearchcx' element={<ProtectedRouteAdmin isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn}><AdvisorAdminSearchcx /></ProtectedRouteAdmin>} />
             <Route path='/AdvisorAdminseenewcxdetails/:customerId' element={<ProtectedRouteAdmin isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn}><AdvisorAdminseenewcxdetails /></ProtectedRouteAdmin>} />
             <Route path='/AdvisorAdminAddCx' element={<ProtectedRouteAdmin isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn}><AdvisorAdminAddCx /></ProtectedRouteAdmin>} />
