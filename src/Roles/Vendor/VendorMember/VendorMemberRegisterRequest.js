@@ -67,44 +67,50 @@ function VendorMemberRegisterRequest() {
         });
     };
 
-    const handleImageChange = (e) => {
-        const { name } = e.target;
-        const file = e.target.files[0];
+   const handleImageChange = (e) => {
+    const { name } = e.target;
+    const file = e.target.files[0];
 
-        // Check image size (limit to 1MB)
-        if (file && file.size > 1024 * 1024) {
-            toast.error(`${name.replace(/([A-Z])/g, ' $1')} image size exceeds 1MB.`);
-            return;
-        }
+    if (!file) {
+        // No file selected; do nothing or clear previous preview if needed
+        return;
+    }
 
-        const reader = new FileReader();
-        reader.onloadend = () => {
-            setImagePreviews((prev) => ({
-                ...prev,
-                [name]: reader.result,
-            }));
+    // Optional: check file size
+    if (file.size > 1024 * 1024) {
+        toast.error(`${name.replace(/([A-Z])/g, ' $1')} image size exceeds 1MB.`);
+        return;
+    }
 
-            setFormData((prev) => ({
-                ...prev,
-                [name]: reader.result, // Store base64 string
-            }));
-        };
-
-        if (file) {
-            reader.readAsDataURL(file);
-        }
-    };
-
-    const handleImageRemove = (name) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
         setImagePreviews((prev) => ({
             ...prev,
-            [name]: '',
+            [name]: reader.result,
         }));
         setFormData((prev) => ({
             ...prev,
-            [name]: '',
+            [name]: reader.result,
         }));
     };
+    reader.readAsDataURL(file);
+};
+
+   const handleImageRemove = (name) => {
+    setImagePreviews((prev) => ({
+        ...prev,
+        [name]: '',
+    }));
+    setFormData((prev) => ({
+        ...prev,
+        [name]: '',
+    }));
+    // Reset file input value to prevent browser prompt
+    const inputElement = document.getElementById(`${name}-upload`);
+    if (inputElement) {
+        inputElement.value = '';
+    }
+};
 
     const handleNext = () => {
         setCurrentStep((prevStep) => Math.min(prevStep + 1, STEPS.length - 1));
@@ -114,114 +120,109 @@ function VendorMemberRegisterRequest() {
         setCurrentStep((prevStep) => Math.max(prevStep - 1, 0));
     };
 
-    const validateAllFields = () => {
-        const mobileRegex = /^\d{10}$/;
-        let isValid = true;
-        let missingFields = [];
+    // const validateAllFields = () => {
+    //     const mobileRegex = /^\d{10}$/;
+    //     let isValid = true;
+    //     let missingFields = [];
 
-        if (!formData.fullName) {
-            missingFields.push("Full Name");
-            isValid = false;
-        }
-        if (!formData.emailId) {
-            missingFields.push("Email ID");
-            isValid = false;
-        }
-        if (!formData.mobileNumber || !mobileRegex.test(formData.mobileNumber)) {
-            missingFields.push("Mobile Number (must be exactly 10 digits)");
-            isValid = false;
-        }
-        if (!formData.fullAddress) {
-            missingFields.push("Full Address");
-            isValid = false;
-        }
-        if (!formData.shopName) {
-            missingFields.push("Shop Name");
-            isValid = false;
-        }
-        if (!formData.shopAddress) {
-            missingFields.push("Shop Address");
-            isValid = false;
-        }
-        if (!formData.gstNo) {
-            missingFields.push("GST No");
-            isValid = false;
-        }
-        if (!formData.panCard) {
-            missingFields.push("PAN Card");
-            isValid = false;
-        }
-        if (!formData.bankAccountNumber) {
-            missingFields.push("Bank Account Number");
-            isValid = false;
-        }
-        if (!formData.bankName) {
-            missingFields.push("Bank Name");
-            isValid = false;
-        }
-        if (!formData.bankAccountName) {
-            missingFields.push("Bank Account Name");
-            isValid = false;
-        }
-        if (!formData.shopRegistrationProof) {
-            missingFields.push("Shop Registration Proof");
-            isValid = false;
-        }
-        if (!formData.shopActLicense) {
-            missingFields.push("Shop Act License");
-            isValid = false;
-        }
-        if (!formData.cancelledCheque) {
-            missingFields.push("Cancelled Cheque");
-            isValid = false;
-        }
+    //     if (!formData.fullName) {
+    //         missingFields.push("Full Name");
+    //         isValid = false;
+    //     }
+    //     if (!formData.emailId) {
+    //         missingFields.push("Email ID");
+    //         isValid = false;
+    //     }
+    //     if (!formData.mobileNumber || !mobileRegex.test(formData.mobileNumber)) {
+    //         missingFields.push("Mobile Number (must be exactly 10 digits)");
+    //         isValid = false;
+    //     }
+    //     if (!formData.fullAddress) {
+    //         missingFields.push("Full Address");
+    //         isValid = false;
+    //     }
+    //     if (!formData.shopName) {
+    //         missingFields.push("Shop Name");
+    //         isValid = false;
+    //     }
+    //     if (!formData.shopAddress) {
+    //         missingFields.push("Shop Address");
+    //         isValid = false;
+    //     }
+    //     if (!formData.gstNo) {
+    //         missingFields.push("GST No");
+    //         isValid = false;
+    //     }
+    //     if (!formData.panCard) {
+    //         missingFields.push("PAN Card");
+    //         isValid = false;
+    //     }
+    //     if (!formData.bankAccountNumber) {
+    //         missingFields.push("Bank Account Number");
+    //         isValid = false;
+    //     }
+    //     if (!formData.bankName) {
+    //         missingFields.push("Bank Name");
+    //         isValid = false;
+    //     }
+    //     if (!formData.bankAccountName) {
+    //         missingFields.push("Bank Account Name");
+    //         isValid = false;
+    //     }
+    //     if (!formData.shopRegistrationProof) {
+    //         missingFields.push("Shop Registration Proof");
+    //         isValid = false;
+    //     }
+    //     if (!formData.shopActLicense) {
+    //         missingFields.push("Shop Act License");
+    //         isValid = false;
+    //     }
+    //     if (!formData.cancelledCheque) {
+    //         missingFields.push("Cancelled Cheque");
+    //         isValid = false;
+    //     }
 
-        if (!isValid) {
-            toast.error(`Please fill in all required fields: ${missingFields.join(', ')}`);
-        }
+    //     if (!isValid) {
+    //         toast.error(`Please fill in all  fields: ${missingFields.join(', ')}`);
+    //     }
 
-        return isValid;
-    };
+    //     return isValid;
+    // };
 
     const [loading, setLoading] = useState(false);
 
-    const handleSubmit = async (e) => {
-        e.preventDefault(); // Prevent the default form submission
-    
-        // Validate all fields before submitting
-        const allValid = validateAllFields();
-        if (!allValid) return;
-    
-        setLoading(true); // Set loading to true when starting the request
-    
-        try {
-            const response = await fetch(`${process.env.REACT_APP_API_URL}/api/vendor-member/register-request`, {
-                method: 'POST',
-                body: JSON.stringify(formData),
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                credentials: 'include', // Include credentials for CORS requests
+   const handleSubmit = async (e) => {
+    e.preventDefault(); // Prevent default form submission
+    setLoading(true); // Indicate loading state
+
+    try {
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/vendor-member/register-request`, {
+            method: 'POST',
+            body: JSON.stringify(formData),
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+        });
+
+        const result = await response.json();
+        if (response.ok) {
+            toast.success(result.message);
+            // Optionally reset formData here if needed
+            setFormData({
+                // you can keep or reset fields as desired
             });
-    
-            const result = await response.json();
-            if (response.ok) {
-                toast.success(result.message);
-                // Reset formData and image previews after successful submission
-                setFormData({
-                    // Resetting your form data...
-                });
-                setImagePreviews({});
-                setCurrentStep(0);
-            } else {
-                toast.error(result.message);
-            }
-        } catch (error) {
-            toast.error("Server error. Please try again later.");
-        } finally {
-            setLoading(false); // Reset loading state after the request is complete
+            setImagePreviews({});
+            setCurrentStep(0);
+        } else {
+            toast.error(result.message);
         }
-    };
+    } catch (error) {
+        toast.error("Server error. Please try again later.");
+    } finally {
+        setLoading(false);
+    }
+};
 
     return (
         <StyledPaper elevation={3} className="container my-5">
@@ -247,14 +248,14 @@ function VendorMemberRegisterRequest() {
             ))}
         </Stepper>
 
-            <form className="row g-3" onSubmit={handleSubmit}>
+            <form className="row g-3" onSubmit={handleSubmit} noValidate onInvalid={(e) => e.preventDefault()}>
                 {currentStep === 0 && (
                     <>
                         <div className="col-md-6">
                             <TextField fullWidth label="Full Name" variant="outlined" name="fullName" value={formData.fullName} onChange={handleInputChange} required />
                         </div>
                         <div className="col-md-6">
-                            <TextField fullWidth label="Email ID" variant="outlined" name="emailId" value={formData.emailId} onChange={handleInputChange} type="email" required />
+                            <TextField fullWidth label="Email ID" variant="outlined" name="emailId" value={formData.emailId} onChange={handleInputChange} type="email"  />
                         </div>
                         <div className="col-md-6">
                             <TextField
@@ -285,12 +286,12 @@ function VendorMemberRegisterRequest() {
                             />
                         </div>
                         <div className="col-md-12">
-                            <TextField fullWidth label="Full Address" variant="outlined" name="fullAddress" value={formData.fullAddress} onChange={handleInputChange} required />
+                            <TextField fullWidth label="Full Address" variant="outlined" name="fullAddress" value={formData.fullAddress} onChange={handleInputChange}  />
                         </div>
                         <div className="col-md-6">
                             <div className="custom-file mb-3">
                                 <input
-                                    accept="image/*"
+                                    accept="image"
                                     className="form-control form-control-lg"
                                     id="profilephoto-upload"
                                     type="file"
@@ -315,16 +316,16 @@ function VendorMemberRegisterRequest() {
                 {currentStep === 1 && (
                     <>
                         <div className="col-md-6">
-                            <TextField fullWidth label="Shop Name" variant="outlined" name="shopName" value={formData.shopName} onChange={handleInputChange} required />
+                            <TextField fullWidth label="Shop Name" variant="outlined" name="shopName" value={formData.shopName} onChange={handleInputChange}  />
                         </div>
                         <div className="col-md-6">
                             <TextField fullWidth label="Shop Website" variant="outlined" name="shopWebsite" value={formData.shopWebsite} onChange={handleInputChange} />
                         </div>
                         <div className="col-md-12">
-                            <TextField fullWidth label="Shop Address" variant="outlined" name="shopAddress" value={formData.shopAddress} onChange={handleInputChange} required />
+                            <TextField fullWidth label="Shop Address" variant="outlined" name="shopAddress" value={formData.shopAddress} onChange={handleInputChange}  />
                         </div>
                         <div className="col-md-6">
-                            <TextField fullWidth label="GST No" variant="outlined" name="gstNo" value={formData.gstNo} onChange={handleInputChange} required />
+                            <TextField fullWidth label="GST No" variant="outlined" name="gstNo" value={formData.gstNo} onChange={handleInputChange}  />
                         </div>
                         <div className="col-md-6">
                             <TextField fullWidth label="CIN No" variant="outlined" name="cinNo" value={formData.cinNo} onChange={handleInputChange} />
@@ -332,13 +333,13 @@ function VendorMemberRegisterRequest() {
                         <div className="col-md-6">
                             <div className="custom-file">
                                 <input
-                                    accept="image/*"
+                                    accept="image"
                                     className="form-control form-control-lg"
                                     id="shopRegistrationProof-upload"
                                     type="file"
                                     onChange={handleImageChange}
                                     name="shopRegistrationProof"
-                                    required
+                                    
                                 />
                                 <label className="form-label" htmlFor="shopRegistrationProof-upload">
                                     <AttachFileIcon /> Upload Shop Registration Proof
@@ -355,7 +356,7 @@ function VendorMemberRegisterRequest() {
                         <div className="col-md-6">
                             <div className="custom-file">
                                 <input
-                                    accept="image/*"
+                                    accept="image"
                                     className="form-control form-control-lg"
                                     id="shopLogo-upload"
                                     type="file"
@@ -377,13 +378,13 @@ function VendorMemberRegisterRequest() {
                         <div className="col-md-6">
                             <div className="custom-file">
                                 <input
-                                    accept="image/*"
+                                    accept="image"
                                     className="form-control form-control-lg"
                                     id="shopAddressProof"
                                     type="file"
                                     onChange={handleImageChange}
                                     name="shopAddressProof"
-                                    required
+                                    
                                 />
                                 <label className="form-label" htmlFor="shopAddressProof">
                                     <AttachFileIcon /> Upload shopAddressProof
@@ -403,16 +404,16 @@ function VendorMemberRegisterRequest() {
                 {currentStep === 2 && (
                     <>
                         <div className="col-md-6">
-                            <TextField fullWidth label="Bank Account Number" variant="outlined" name="bankAccountNumber" value={formData.bankAccountNumber} onChange={handleInputChange} required />
+                            <TextField fullWidth label="Bank Account Number" variant="outlined" name="bankAccountNumber" value={formData.bankAccountNumber} onChange={handleInputChange}  />
                         </div>
                         <div className="col-md-6">
-                            <TextField fullWidth label="Bank Name" variant="outlined" name="bankName" value={formData.bankName} onChange={handleInputChange} required />
+                            <TextField fullWidth label="Bank Name" variant="outlined" name="bankName" value={formData.bankName} onChange={handleInputChange}  />
                         </div>
                         <div className="col-md-6">
-                            <TextField fullWidth label="Bank Account Name" variant="outlined" name="bankAccountName" value={formData.bankAccountName} onChange={handleInputChange} required />
+                            <TextField fullWidth label="Bank Account Name" variant="outlined" name="bankAccountName" value={formData.bankAccountName} onChange={handleInputChange}  />
                         </div>
                         <div className="col-md-6">
-                            <TextField fullWidth label="Bank Code" variant="outlined" name="bankCode" value={formData.bankCode} onChange={handleInputChange} required />
+                            <TextField fullWidth label="Bank Code" variant="outlined" name="bankCode" value={formData.bankCode} onChange={handleInputChange}  />
                         </div>
                     </>
                 )}
@@ -422,13 +423,13 @@ function VendorMemberRegisterRequest() {
                         <div className="col-md-6">
                             <div className="custom-file">
                                 <input
-                                    accept="image/*"
+                                    accept="image"
                                     className="form-control form-control-lg"
                                     id="addressProof-upload"
                                     type="file"
                                     onChange={handleImageChange}
                                     name="addressProof"
-                                    required
+                                    
                                 />
                                 <label className="form-label" htmlFor="addressProof-upload">
                                     <AttachFileIcon /> Upload Address Proof
@@ -446,13 +447,13 @@ function VendorMemberRegisterRequest() {
                         <div className="col-md-6">
                             <div className="custom-file">
                                 <input
-                                    accept="image/*"
+                                    accept="image"
                                     className="form-control form-control-lg"
                                     id="gramPanchayatNoc"
                                     type="file"
                                     onChange={handleImageChange}
                                     name="gramPanchayatNoc"
-                                    required
+                                    
                                 />
                                 <label className="form-label" htmlFor="gramPanchayatNoc">
                                     <AttachFileIcon /> Upload gramPanchayatNoc
@@ -470,13 +471,13 @@ function VendorMemberRegisterRequest() {
                         <div className="col-md-6">
                             <div className="custom-file">
                                 <input
-                                    accept="image/*"
+                                    accept="image"
                                     className="form-control form-control-lg"
                                     id="panCard-upload"
                                     type="file"
                                     onChange={handleImageChange}
                                     name="panCard"
-                                    required
+                                    
                                 />
                                 <label className="form-label" htmlFor="panCard-upload">
                                     <AttachFileIcon /> Upload PAN Card
@@ -494,13 +495,13 @@ function VendorMemberRegisterRequest() {
                         <div className="col-md-6">
                             <div className="custom-file">
                                 <input
-                                    accept="image/*"
+                                    accept="image"
                                     className="form-control form-control-lg"
                                     id="gstCertificate-upload"
                                     type="file"
                                     onChange={handleImageChange}
                                     name="gstCertificate"
-                                    required
+                                    
                                 />
                                 <label className="form-label" htmlFor="gstCertificate-upload">
                                     <AttachFileIcon /> Upload GST Certificate
@@ -518,13 +519,13 @@ function VendorMemberRegisterRequest() {
                         <div className="col-md-6">
                             <div className="custom-file">
                                 <input
-                                    accept="image/*"
+                                    accept="image"
                                     className="form-control form-control-lg"
                                     id="shopActLicense-upload"
                                     type="file"
                                     onChange={handleImageChange}
                                     name="shopActLicense"
-                                    required
+                                    
                                 />
                                 <label className="form-label" htmlFor="shopActLicense-upload">
                                     <AttachFileIcon /> Upload Shop Act License
@@ -554,13 +555,13 @@ function VendorMemberRegisterRequest() {
                         <div className="col-md-6">
                             <div className="custom-file">
                                 <input
-                                    accept="image/*"
+                                    accept="image"
                                     className="form-control form-control-lg"
                                     id="panImage-upload"
                                     type="file"
                                     onChange={handleImageChange}
                                     name="panImage"
-                                    required
+                                    
                                 />
                                 <label className="form-label" htmlFor="panImage-upload">
                                     <AttachFileIcon /> Upload PAN Image
@@ -577,13 +578,13 @@ function VendorMemberRegisterRequest() {
                         <div className="col-md-6">
                             <div className="custom-file">
                                 <input
-                                    accept="image/*"
+                                    accept="image"
                                     className="form-control form-control-lg"
                                     id="cancelledCheque-upload"
                                     type="file"
                                     onChange={handleImageChange}
                                     name="cancelledCheque"
-                                    required
+                                    
                                 />
                                 <label className="form-label" htmlFor="cancelledCheque-upload">
                                     <AttachFileIcon /> Upload Cancelled Cheque
@@ -601,13 +602,35 @@ function VendorMemberRegisterRequest() {
                 )}
 
                 <div className="col-md-12">
-                    <Button variant="contained" color="primary" onClick={handlePrev} disabled={currentStep === 0}>Previous</Button>
-                    {currentStep === STEPS.length - 1 ? (
-                        <Button variant="contained" color="primary" type="submit">Submit Registration Request</Button>
-                    ) : (
-                        <Button variant="contained" color="primary" onClick={handleNext}>Next</Button>
-                    )}
-                </div>
+  <Button
+    variant="contained"
+    color="primary"
+    onClick={handlePrev}
+    disabled={currentStep === 0}
+  >
+    Previous
+  </Button>
+
+  {currentStep === STEPS.length - 1 ? (
+    // On last step, show submit button
+    <Button
+      variant="contained"
+      color="primary"
+      type="submit"
+    >
+      Submit Registration Request
+    </Button>
+  ) : (
+    // On intermediate steps, show Next button
+    <Button
+      variant="contained"
+      color="primary"
+      onClick={handleNext}
+    >
+      Next
+    </Button>
+  )}
+</div>
             </form>
         </StyledPaper>
     );
