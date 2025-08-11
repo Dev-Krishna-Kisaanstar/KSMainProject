@@ -68,10 +68,13 @@ const styles = {
         backgroundColor: '#fff',
         padding: '40px',
         borderRadius: '12px',
+        maxHeight: '90vh',
+        overflowY: 'auto',
         maxWidth: '900px',
         width: '90%',
         boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
     },
+
     image: {
         width: '200px',
         height: 'auto',
@@ -149,6 +152,8 @@ function ProductList() {
                 const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/advisory-member/get-products`, {
                     withCredentials: true,
                 });
+                console.log(response.data);
+                
                 setProducts(response.data.approvedProducts);
             } catch (err) {
                 setError(err.message);
@@ -269,7 +274,7 @@ function ProductList() {
                                             </TableCell>
                                             <TableCell style={styles.tableCell}>{product.productName}</TableCell>
                                             <TableCell style={styles.tableCell}>
-                                                <MoneyOff style={{ ...styles.icon }} /> ₹ {product.sellPrice} <span style={{ textDecoration: 'line-through' }}>₹ {product.MRP}</span>
+                                                 ₹ {product.MRP} <span style={{ textDecoration: 'line-through' }}>₹ {product.sellPrice}</span>
                                             </TableCell>
                                             <TableCell style={styles.tableCell}>{product.productDescription}</TableCell>
                                             <TableCell style={styles.tableCell}>
@@ -297,7 +302,7 @@ function ProductList() {
                         >
                             <div style={styles.modalContent}>
                                 {selectedProduct && (
-                                    <Grid container spacing={3}>
+                                    <Grid container spacing={2} sx={{ mt: 1 }}>
                                         <Grid item xs={12}>
                                             <Typography id="modal-title" variant="h5" className="mb-2">
                                                 {selectedProduct.productName}
@@ -386,7 +391,7 @@ function ProductList() {
                                                 style={styles.readonly}
                                                 fullWidth
                                                 multiline
-                                                rows={5}
+                                                rows={8}
                                             />
                                             <TextField
                                                 label="Mode of Use"
@@ -435,12 +440,12 @@ function ProductList() {
                                         </Grid>
 
                                         <Grid item xs={12}>
-                                            <Typography variant="h6">FAQs:</Typography>
-                                            {selectedProduct.faqs.map((faq, index) => (
-                                                <Grid container spacing={1} key={faq._id}>
-                                                    <Grid item xs={12}>
+                                            <Typography variant="h6" gutterBottom>FAQs:</Typography>
+                                            <Box sx={{ maxHeight: 300, overflowY: 'auto', pr: 1 }}>
+                                                {selectedProduct.faqs.map((faq, index) => (
+                                                    <Box key={faq._id} mb={2}>
                                                         <TextField
-                                                            label={`Q ${index + 1}: ${faq.question}`}
+                                                            label={`Q${index + 1}: ${faq.question}`}
                                                             value={faq.answer}
                                                             InputProps={{
                                                                 readOnly: true,
@@ -450,21 +455,24 @@ function ProductList() {
                                                             style={styles.readonly}
                                                             fullWidth
                                                             multiline
+                                                            rows={4}
                                                         />
-                                                    </Grid>
-                                                </Grid>
-                                            ))}
+                                                    </Box>
+                                                ))}
+                                            </Box>
+
                                         </Grid>
 
                                         <Grid item xs={12}>
-                                            <Button 
-                                                variant="contained" 
-                                                color="primary" 
-                                                onClick={handleModalClose} 
-                                                style={{ marginTop: '20px' }}
+                                            <Button
+                                                variant="contained"
+                                                color="secondary"
+                                                onClick={handleModalClose}
+                                                sx={{ mt: 3, fontWeight: 'bold', borderRadius: '12px' }}
                                             >
                                                 Close
                                             </Button>
+
                                         </Grid>
                                     </Grid>
                                 )}

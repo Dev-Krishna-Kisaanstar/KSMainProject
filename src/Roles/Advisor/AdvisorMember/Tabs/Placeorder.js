@@ -329,153 +329,86 @@ const PlaceOrder = ({ customerId, advisorId }) => {
           </Grid>
         </Grid>
 
+          {/* Modal with bigger, multiline fields */}
         <Modal open={modalOpen} onClose={handleModalClose}>
           <Box sx={{
             backgroundColor: "white",
             borderRadius: 2,
             padding: 4,
-            maxWidth: 600,
+            maxWidth: 800,
+            width: '90%',
             margin: "auto",
-            mt: '10%',
-            maxHeight: '70vh',
+            mt: '5%',
+            maxHeight: '85vh',
             overflowY: 'auto',
           }}>
             {selectedProduct && (
               <>
-                <Typography variant="h5">{selectedProduct.productName}</Typography>
+                <Typography variant="h5" fontWeight="bold" gutterBottom>
+                  {selectedProduct.productName}
+                </Typography>
                 <Grid container spacing={2}>
                   <Grid item xs={6}>
-                    <img src={selectedProduct.productImages[0]} alt={selectedProduct.productName} style={{ width: '100%', height: 'auto' }} />
+                    <img
+                      src={selectedProduct.productImages[0]}
+                      alt={selectedProduct.productName}
+                      style={{ width: '100%', height: 'auto', borderRadius: '8px' }}
+                    />
                   </Grid>
                   <Grid item xs={6}>
                     <TextField
                       label="Description"
                       value={selectedProduct.productDescription}
                       fullWidth
-                      InputProps={{
-                        readOnly: true,
-                      }}
+                      multiline
+                      minRows={3} // ⬅ Larger field
+                      InputProps={{ readOnly: true }}
                     />
-                    <TextField
-                      label="Price (₹)"
-                      value={selectedProduct.MRP}
-                      fullWidth
-                      InputProps={{
-                        readOnly: true,
-                      }}
-                      sx={{ mt: 2 }}
-                    />
-                    <TextField
-                      label="Category"
-                      value={selectedProduct.category}
-                      fullWidth
-                      InputProps={{
-                        readOnly: true,
-                      }}
-                      sx={{ mt: 2 }}
-                    />
-                    <TextField
-                      label="Sub-Category"
-                      value={selectedProduct.subCategory}
-                      fullWidth
-                      InputProps={{
-                        readOnly: true,
-                      }}
-                      sx={{ mt: 2 }}
-                    />
-                    <TextField
-                      label="Brand"
-                      value={selectedProduct.productBrandName}
-                      fullWidth
-                      InputProps={{
-                        readOnly: true,
-                      }}
-                      sx={{ mt: 2 }}
-                    />
+                    <TextField label="Price (₹)" value={selectedProduct.MRP} fullWidth InputProps={{ readOnly: true }} sx={{ mt: 2 }} />
+                    <TextField label="Category" value={selectedProduct.category} fullWidth InputProps={{ readOnly: true }} sx={{ mt: 2 }} />
+                    <TextField label="Sub-Category" value={selectedProduct.subCategory} fullWidth InputProps={{ readOnly: true }} sx={{ mt: 2 }} />
+                    <TextField label="Brand" value={selectedProduct.productBrandName} fullWidth InputProps={{ readOnly: true }} sx={{ mt: 2 }} />
                   </Grid>
                 </Grid>
-                <Typography variant="h6" sx={{ mt: 2 }}>Additional Information</Typography>
-                <TextField
-                  label="Mode of Use"
-                  value={selectedProduct.modeOfUse}
-                  fullWidth
-                  InputProps={{
-                    readOnly: true,
-                  }}
-                  sx={{ mt: 1 }}
-                />
-                <TextField
-                  label="Note"
-                  value={selectedProduct.note}
-                  fullWidth
-                  InputProps={{
-                    readOnly: true,
-                  }}
-                  sx={{ mt: 1 }}
-                />
-                <TextField
-                  label="Chemical Composition"
-                  value={selectedProduct.productChemicalComposition}
-                  fullWidth
-                  InputProps={{
-                    readOnly: true,
-                  }}
-                  sx={{ mt: 1 }}
-                />
-                <TextField
-                  label="Features & Benefits"
-                  value={selectedProduct.featuresAndBenefits.join(', ')}
-                  fullWidth
-                  InputProps={{
-                    readOnly: true,
-                  }}
-                  sx={{ mt: 1 }}
-                />
-                <TextField
-                  label="How to Use"
-                  value={selectedProduct.howToUse.join(', ')}
-                  fullWidth
-                  InputProps={{
-                    readOnly: true,
-                  }}
-                  sx={{ mt: 1 }}
-                />
-                <TextField
-                  label="Doses"
-                  value={selectedProduct.doses.join(', ')}
-                  fullWidth
-                  InputProps={{
-                    readOnly: true,
-                  }}
-                  sx={{ mt: 1 }}
-                />
-                {selectedProduct.youtubeVideoLinks.length > 0 && (
+
+                <Typography variant="h6" sx={{ mt: 3 }}>Additional Information</Typography>
+                {[
+                  { label: "Mode of Use", value: selectedProduct.modeOfUse },
+                  { label: "Note", value: selectedProduct.note },
+                  { label: "Chemical Composition", value: selectedProduct.productChemicalComposition },
+                  { label: "Features & Benefits", value: selectedProduct.featuresAndBenefits.join(', ') },
+                  { label: "How to Use", value: selectedProduct.howToUse.join(', ') },
+                  { label: "Doses", value: selectedProduct.doses.join(', ') },
+                  ...(selectedProduct.youtubeVideoLinks.length > 0 ? [{ label: "YouTube Links", value: selectedProduct.youtubeVideoLinks.join(', ') }] : [])
+                ].map((field, index) => (
                   <TextField
-                    label="YouTube Links"
-                    value={selectedProduct.youtubeVideoLinks.join(', ')}
+                    key={index}
+                    label={field.label}
+                    value={field.value}
                     fullWidth
-                    InputProps={{
-                      readOnly: true,
-                    }}
-                    sx={{ mt: 1 }}
+                    multiline
+                    minRows={2} // ⬅ More space for each
+                    InputProps={{ readOnly: true }}
+                    sx={{ mt: 2 }}
                   />
-                )}
+                ))}
+
                 {selectedProduct.faqs.map(faq => (
                   <Box key={faq._id}>
                     <TextField
                       label={`Q: ${faq.question}`}
                       value={faq.answer}
                       fullWidth
-                      InputProps={{
-                        readOnly: true,
-                      }}
+                      multiline
+                      minRows={2}
+                      InputProps={{ readOnly: true }}
                       sx={{ mt: 2 }}
                     />
                   </Box>
                 ))}
               </>
             )}
-            <Button variant="contained" onClick={handleModalClose} sx={{ mt: 2 }}>Close</Button>
+            <Button variant="contained" onClick={handleModalClose} sx={{ mt: 3 }}>Close</Button>
           </Box>
         </Modal>
       </Paper>

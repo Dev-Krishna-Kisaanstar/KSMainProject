@@ -12,9 +12,8 @@ import {
     TableHead,
     TableRow,
 } from "@mui/material";
-import { ToastContainer, toast } from 'react-toastify';
 import { useParams } from 'react-router-dom';
-import { AccessAlarm, AdminPanelSettings, Message } from '@mui/icons-material';
+import { AdminPanelSettings, Message } from '@mui/icons-material';
 
 function AdvisorMemberseenewcxdetails() {
     const { customerId } = useParams();
@@ -28,6 +27,7 @@ function AdvisorMemberseenewcxdetails() {
 
 function Tagging({ customerId }) {
     const [error, setError] = useState("");
+    const [showAlert, setShowAlert] = useState(null); // for full-width alerts
     const [taggingRecords, setTaggingRecords] = useState([]);
 
     useEffect(() => {
@@ -45,10 +45,11 @@ function Tagging({ customerId }) {
                     setTaggingRecords(sortedTags);
                 } else {
                     setError("No tagging records found.");
+                    setShowAlert({ type: "warning", message: "No tagging records found." });
                 }
             } catch (error) {
                 setError("Failed to fetch tagging details");
-                toast.error("Failed to fetch tagging details");
+                setShowAlert({ type: "error", message: "Failed to fetch tagging details" });
             }
         };
 
@@ -66,66 +67,113 @@ function Tagging({ customerId }) {
     }
 
     return (
-        <Container maxWidth="lg" sx={{
-            mt: 4,
-            padding: '30px',
-            borderRadius: '12px',
-            boxShadow: '0px 4px 20px rgba(0,0,0,0.1)',
-            backgroundColor: 'rgba(15, 21, 53, 0.7)',
-            backdropFilter: 'blur(10px)',
-            color: 'white',
-        }}>
-            <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} />
-            {error && <Alert severity="error" sx={{ color: 'white' }}>{error}</Alert>}
-            <Typography variant="h4" align="center" sx={{
-                fontFamily: 'Poppins, sans-serif', fontWeight: 'bold', mb: 4, color: 'white'
-            }}>
-                Tagging Details
-            </Typography>
-
-            {taggingRecords.length > 0 ? (
-                <TableContainer component={Paper} sx={{ backgroundColor: 'rgba(255, 255, 255, 0.1)', backdropFilter: 'blur(5px)', color: 'white' }}>
-                    <Table sx={{ minWidth: 650 }} aria-label="tagging records table">
-                        <TableHead>
-                            <TableRow>
-                                <TableCell sx={{ color: 'white' }}>Name</TableCell>
-                                <TableCell sx={{ color: 'white' }}>Date and Time</TableCell>
-                                <TableCell sx={{ color: 'white' }}>Service 1</TableCell>
-                                <TableCell sx={{ color: 'white' }}>Service 2</TableCell>
-                                <TableCell sx={{ color: 'white' }}>Remarks</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {taggingRecords.map((tag) => (
-                                <TableRow key={tag._id}>
-                                    <TableCell sx={{ color: 'white' }}>
-                                        <AdminPanelSettings sx={{ color: 'lime', verticalAlign: 'middle', mr: 1 }} />
-                                        {tag.advisorName || 'N/A'}
-                                    </TableCell>
-                                    <TableCell sx={{ color: 'white' }}>
-                                        {tag.taggedDate ? new Date(tag.taggedDate).toLocaleString() : 'N/A'}
-                                    </TableCell>
-                                    <TableCell sx={{ color: 'white' }}>
-                                        {tag.service1}
-                                    </TableCell>
-                                    <TableCell sx={{ color: 'white' }}>
-                                        {tag.service2}
-                                    </TableCell>
-                                    <TableCell sx={{ color: 'white' }}>
-                                        <Message sx={{ color: 'lime', verticalAlign: 'middle', mr: 1 }} />
-                                        {tag.remarks || 'N/A'}
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
-            ) : (
-                <Typography variant="h6" align="center" color="text.secondary" sx={{ fontWeight: 'bold', color: 'white' }}>
-                    No tagging records available.
-                </Typography>
+        <>
+            {/* Full-screen alert */}
+            {showAlert && (
+                <Alert
+                    severity={showAlert.type}
+                    onClose={() => setShowAlert(null)}
+                    sx={{
+                        position: "fixed",
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        width: "100vw",
+                        borderRadius: 0,
+                        zIndex: 9999
+                    }}
+                >
+                    {showAlert.message}
+                </Alert>
             )}
-        </Container>
+
+            <Container
+                maxWidth="lg"
+                sx={{
+                    mt: 4,
+                    padding: "30px",
+                    borderRadius: "12px",
+                    boxShadow: "0px 4px 20px rgba(0,0,0,0.1)",
+                    backgroundColor: "rgba(15, 21, 53, 0.7)",
+                    backdropFilter: "blur(10px)",
+                    color: "white",
+                }}
+            >
+                {error && <Alert severity="error" sx={{ color: 'white' }}>{error}</Alert>}
+                <Typography
+                    variant="h4"
+                    align="center"
+                    sx={{
+                        fontFamily: "Poppins, sans-serif",
+                        fontWeight: "bold",
+                        mb: 4,
+                        color: "white",
+                    }}
+                >
+                    Tagging Details
+                </Typography>
+
+                {taggingRecords.length > 0 ? (
+                    <TableContainer
+                        component={Paper}
+                        sx={{
+                            backgroundColor: "rgba(255, 255, 255, 0.1)",
+                            backdropFilter: "blur(5px)",
+                            color: "white",
+                        }}
+                    >
+                        <Table sx={{ minWidth: 650 }} aria-label="tagging records table">
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell sx={{ color: "white" }}>Name</TableCell>
+                                    <TableCell sx={{ color: "white" }}>Date and Time</TableCell>
+                                    <TableCell sx={{ color: "white" }}>Service 1</TableCell>
+                                    <TableCell sx={{ color: "white" }}>Service 2</TableCell>
+                                    <TableCell sx={{ color: "white" }}>Remarks</TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {taggingRecords.map((tag) => (
+                                    <TableRow key={tag._id}>
+                                        <TableCell sx={{ color: "white" }}>
+                                            <AdminPanelSettings
+                                                sx={{ color: "lime", verticalAlign: "middle", mr: 1 }}
+                                            />
+                                            {tag.advisorName || "N/A"}
+                                        </TableCell>
+                                        <TableCell sx={{ color: "white" }}>
+                                            {tag.taggedDate
+                                                ? new Date(tag.taggedDate).toLocaleString()
+                                                : "N/A"}
+                                        </TableCell>
+                                        <TableCell sx={{ color: "white" }}>
+                                            {tag.service1}
+                                        </TableCell>
+                                        <TableCell sx={{ color: "white" }}>
+                                            {tag.service2}
+                                        </TableCell>
+                                        <TableCell sx={{ color: "white" }}>
+                                            <Message
+                                                sx={{ color: "lime", verticalAlign: "middle", mr: 1 }}
+                                            />
+                                            {tag.remarks || "N/A"}
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+                ) : (
+                    <Typography
+                        variant="h6"
+                        align="center"
+                        sx={{ fontWeight: "bold", color: "white" }}
+                    >
+                        No tagging records available.
+                    </Typography>
+                )}
+            </Container>
+        </>
     );
 }
 

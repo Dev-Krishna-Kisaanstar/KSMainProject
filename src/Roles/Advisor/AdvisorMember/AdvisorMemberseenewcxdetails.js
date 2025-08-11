@@ -19,12 +19,11 @@ import {
   Dialog,
   DialogTitle,
   DialogActions,
+  Container
 } from '@mui/material';
 import { AddLocation, Edit, AddShoppingCart, Save, ArrowBack, NearMe, Task, Refresh, Comment, History, LocationOn, ShoppingCart } from '@mui/icons-material';
 import axios from 'axios';
 import postOfficeData from '../../../Assets/Pincodes/pincodeData.json';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 import Cookies from 'js-cookie';
 import TaggingAuth from './Auth/TaggingAuth';
 import Tagging from './Tabs/Tagging';
@@ -50,6 +49,8 @@ function AdvisorMemberseenewcxdetails() {
   const navigate = useNavigate();
 
   // State variables
+  const [alerts, setAlerts] = useState([]);
+    const [showAlert, setShowAlert] = useState(null); 
   const [customer, setCustomer] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -148,6 +149,16 @@ function AdvisorMemberseenewcxdetails() {
       setError('Mobile number is missing. Cannot fetch customer details.');
     }
   }, [mobileNumber]);
+
+  // Utility to add alert
+const addAlert = (type, message) => {
+  setAlerts(prev => [...prev, { type, message }]);
+};
+
+// Utility to remove alert
+const removeAlert = (index) => {
+  setAlerts(prev => prev.filter((_, i) => i !== index));
+};
 
   const fetchCustomerDetails = async (mobileNumber) => {
     setLoading(true);
@@ -333,13 +344,13 @@ function AdvisorMemberseenewcxdetails() {
         customerDetails,
         { withCredentials: true }
       );
-      toast.success('Customer details saved successfully!');
+      addAlert('success', 'Customer details saved successfully!');
       fetchCustomerDetails(mobileNumber);
       setIsEditableDetails(false);
     } catch (error) {
       console.error('Error saving customer details:', error);
       setError('Failed to save customer details.');
-      toast.error('Failed to save customer details.');
+      addAlert('error', 'Failed to save customer details.');
     } finally {
       setLoading(false);
     }
@@ -453,13 +464,13 @@ function AdvisorMemberseenewcxdetails() {
         farmingDetails,
         { withCredentials: true }
       );
-      toast.success('Farming details saved successfully!');
-      fetchFarmingDetails();
+      addAlert('success','Farming details saved successfully!');
+      fetchFarmingDetails(mobileNumber);
       setIsEditableFarming(false);
     } catch (error) {
       console.error('Error submitting farming details:', error);
       setError('Failed to submit farming details.');
-      toast.error('Failed to submit farming details.');
+      addAlert('error','Failed to submit farming details.');
     } finally {
       setLoading(false);
     }
@@ -473,13 +484,13 @@ function AdvisorMemberseenewcxdetails() {
         farmingDetails,
         { withCredentials: true }
       );
-      toast.success('Farming details updated successfully!');
-      fetchFarmingDetails();
+      addAlert('success','Farming details updated successfully!');
+      fetchFarmingDetails(mobileNumber);
       setIsEditableFarming(false);
     } catch (error) {
       console.error('Error updating farming details:', error);
       setError('Failed to update farming details.');
-      toast.error('Failed to update farming details.');
+      addAlert('error','Failed to update farming details.');
     } finally {
       setLoading(false);
     }
@@ -530,7 +541,7 @@ function AdvisorMemberseenewcxdetails() {
       if (response.status === 200) {
         const newPassword = response.data.actualPassword;
         setPassword(newPassword);
-        toast.success('Password regenerated successfully!');
+       addAlert('success','Password regenerated successfully!');
 
         // Call fetchFarmingDetails with current mobileNumber
         fetchFarmingDetails(mobileNumber);
@@ -540,7 +551,7 @@ function AdvisorMemberseenewcxdetails() {
     } catch (error) {
       console.error('Error regenerating password:', error);
       setError('Failed to regenerate password.');
-      toast.error('Failed to regenerate password.');
+     addAlert('error','Failed to regenerate password.');
     } finally {
       setLoading(false);
     }
@@ -616,6 +627,25 @@ function AdvisorMemberseenewcxdetails() {
   };
 
   return (
+      <Container maxWidth={false} disableGutters>
+      {/* Alerts */}
+      {showAlert && (
+  <Alert
+    severity={showAlert.type}
+    onClose={() => setShowAlert(null)}
+    sx={{
+      width: '100%',
+      borderRadius: 0,
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      zIndex: 9999
+    }}
+  >
+    {showAlert.message}
+  </Alert>
+)}
+
     <div style={{
       ...pageStyle,
       backgroundColor: 'rgba(15, 21, 53, 0.6)',   // Semi-transparent dark background
@@ -624,7 +654,6 @@ function AdvisorMemberseenewcxdetails() {
       padding: '16px',
       color: 'white'                               // Default text color for readability
     }}>
-      <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} />
       <Box style={{ flex: 1 }} className="p-4 rounded shadow">
         {/* Header Section */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
@@ -861,7 +890,7 @@ function AdvisorMemberseenewcxdetails() {
                 if (isAddressComplete()) {
                   // Place order logic here
                 } else {
-                  toast.warning('Please fill all address fields before placing order.');
+                  addAlert('error','Please fill all address fields before placing order.');
                 }
               }}
             >
@@ -1517,8 +1546,8 @@ function AdvisorMemberseenewcxdetails() {
 
 
       </Box>
-      <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} />
     </div>
+    </Container>
   );
 }
 
