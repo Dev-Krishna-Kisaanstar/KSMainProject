@@ -27,15 +27,16 @@ function InventorySidebar({ onPriceSubmit, productBasePrice, MRP, sellPrice, sto
     const [selectedTab, setSelectedTab] = useState(0);
 
     useEffect(() => {
-        setInventoryData(prev => ({
-            ...prev,
-            productBasedPrice: productBasePrice || '',
-            MRP: MRP || '',
-            sellPrice: sellPrice || '',
-            stockOnHold: stockOnHold || '',
-            stockListedForSell: stockListedForSell || ''
-        }));
-    }, [productBasePrice, MRP, sellPrice, stockOnHold, stockListedForSell]);
+  if (!isEditing) {
+    setInventoryData({
+      productBasedPrice: productBasePrice || '',
+      MRP: MRP || '',
+      sellPrice: sellPrice || '',
+      stockOnHold: stockOnHold || '',
+      stockListedForSell: stockListedForSell || ''
+    });
+  }
+}, [productBasePrice, MRP, sellPrice, stockOnHold, stockListedForSell, isEditing]);
 
     const handleTabChange = (event, newValue) => {
         setSelectedTab(newValue);
@@ -163,8 +164,9 @@ function InventorySidebar({ onPriceSubmit, productBasePrice, MRP, sellPrice, sto
                                 label="MRP"
                                 name="MRP"
                                 value={inventoryData.MRP}
+                                onChange={handleChange}
                                 variant="outlined"
-                                disabled
+                                disabled={!isEditing}
                             />
                         </Grid>
                         <Grid item xs={12}>

@@ -114,52 +114,69 @@ const PlaceOrder = ({ customerId, advisorId }) => {
     }));
   };
 
-  const placeOrder = async () => {
-    if (!customerId) {
-      toast.error("Customer ID is required.");
-      return;
-    }
+ const placeOrder = async () => {
+  if (!customerId) {
+    toast.error("Customer ID is required.");
+    return;
+  }
 
-    const orders = Object.keys(checkedProducts).map(productId => ({
-      productId,
-      quantity: checkedProducts[productId],
-    }));
+  const orders = Object.keys(checkedProducts).map(productId => ({
+    productId,
+    quantity: checkedProducts[productId],
+  }));
 
-    if (orders.some(order => order.quantity <= 0)) {
-      toast.error("Please select a product for all items.");
-      return;
-    }
+  if (orders.some(order => order.quantity <= 0)) {
+    toast.error("Please select a product for all items.");
+    return;
+  }
 
-    const dataToSend = {
-      customerId,
-      paymentMethod: "COD",
-      transactionId: null,
-      couponCode: selectedCoupon || "",
-      orders,
-    };
+  // ✅ Check for stock availability
+  const outOfStockProducts = orders.filter(order => {
+  const product = productOptions.find(p => p._id === order.productId);
+  return product && (product.stock === 0 || !product.stock);
+});
+if (outOfStockProducts.length > 0) {
+  toast.error("No stock at the moment for one or more selected products.");
+  return;
+}
 
-    setSubmitting(true);
-    try {
-      const response = await axios.post(
-        `${process.env.REACT_APP_API_URL}/api/orders/place-by-advisor`,
-        dataToSend,
-        { withCredentials: true }
-      );
 
-      if (response.data.message === "Orders processed") {
-        toast.success("Order placed successfully!");
-        setCheckedProducts({});
-        setSelectedCoupon("");
-      } else {
-        toast.error(response.data.message || "Failed to place order.");
-      }
-    } catch (error) {
-      console.error("Order placement error:", error);
-      toast.error(error.response?.data?.message || "Failed to place order. Please try again.");
-    } finally {
-      setSubmitting(false);
-    }
+  if (outOfStockProducts.length > 0) {
+    toast.error("No stock at the moment for one or more selected products.");
+    return;
+  }
+
+  const dataToSend = {
+    customerId,
+    paymentMethod: "COD",
+    transactionId: null,
+    couponCode: selectedCoupon || "",
+    orders,
   };
+
+  setSubmitting(true);
+  try {
+    const response = await axios.post(
+      `${process.env.REACT_APP_API_URL}/api/orders/place-by-advisor`,
+      dataToSend,
+      { withCredentials: true }
+    );
+
+    if (response.data.message === "Orders processed") {
+      toast.success("Order placed successfully!");
+      setCheckedProducts({});
+      setSelectedCoupon("");
+    } else {
+      toast.error(response.data.message || "Failed to place order.");
+    }
+  } catch (error) {
+    console.error("Order placement error:", error);
+    toast.error(error.response?.data?.message || "Failed to place order. Please try again.");
+  } finally {
+    setSubmitting(false);
+  }
+};
+
 
   return (
     <Box

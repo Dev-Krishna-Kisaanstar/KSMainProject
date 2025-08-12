@@ -20,14 +20,20 @@ import Sidebar from '../../../Sidebars/Vendor/VendorAdmin/VendorAdminSidebar';
 import InventorySidebar from './InventorySidebar';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import UploadIcon from '@mui/icons-material/Upload';
+
 
 function ViewDetailsApprovedProducts() {
     const location = useLocation();
-    const { productId } = location.state; 
+    const { productId } = location.state;
     const [productDetails, setProductDetails] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [isEditing, setIsEditing] = useState(false);
+    const [newProductImages, setNewProductImages] = React.useState([]);
+    const [newBannerImages, setNewBannerImages] = React.useState([]);
+    const productImagesRef = React.useRef();
+    const bannerImagesRef = React.useRef();
 
     useEffect(() => {
         const fetchProductDetails = async () => {
@@ -51,22 +57,35 @@ function ViewDetailsApprovedProducts() {
     }, [productId]);
 
     const handleSave = async () => {
-        console.log("Saving product details:", productDetails);
         try {
+            const updatedProductDetails = {
+                ...productDetails,
+                productImages: newProductImages.length ? newProductImages : productDetails.productImages,
+                productBannerImages: newBannerImages.length ? newBannerImages : productDetails.productBannerImages,
+            };
+
             await axios.patch(
                 `${process.env.REACT_APP_API_URL}/api/vendor-admin/update-product/${productId}`,
-                productDetails,
+                updatedProductDetails,
                 { withCredentials: true }
             );
+
             toast.success("Product details updated successfully!");
-            console.log("Product details updated successfully!");
+            setNewProductImages([]);
+            setNewBannerImages([]);
+            setProductDetails(updatedProductDetails);
         } catch (error) {
-            console.error("Error saving product details:", error);
             toast.error("Failed to save product details.");
         } finally {
             setIsEditing(false);
-            console.log("Exiting editing mode.");
         }
+    };
+
+
+    // Dummy upload function (replace with your actual upload logic)
+    const uploadImagesAndGetUrls = async (images) => {
+        // For demo, return the local URLs (replace with actual upload code)
+        return images;
     };
 
     if (loading) {
@@ -84,6 +103,30 @@ function ViewDetailsApprovedProducts() {
             </Box>
         );
     }
+    const handleImageChange = (e, type) => {
+        const files = Array.from(e.target.files);
+
+        const convertToBase64 = (file) => {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = (error) => reject(error);
+            });
+        };
+
+        Promise.all(files.map(file => convertToBase64(file)))
+            .then(base64Images => {
+                if (type === 'productImages') {
+                    setNewProductImages(base64Images); // Stores Base64
+                } else if (type === 'bannerImages') {
+                    setNewBannerImages(base64Images);
+                }
+            })
+            .catch(err => console.error("Error converting images:", err));
+    };
+
+
 
     return (
         <div style={pageStyle}>
@@ -93,10 +136,10 @@ function ViewDetailsApprovedProducts() {
                 <Typography variant="h5" align="center" gutterBottom>
                     Product Details
                 </Typography>
-                <Button 
-                    variant="contained" 
-                    color="primary" 
-                    style={{ float: 'right', marginBottom: '10px' }} 
+                <Button
+                    variant="contained"
+                    color="primary"
+                    style={{ float: 'right', marginBottom: '10px' }}
                     onClick={() => {
                         if (isEditing) {
                             handleSave();
@@ -332,13 +375,19 @@ function ViewDetailsApprovedProducts() {
                                         rows={3}
                                     />
                                 </Grid>
-                                <Grid item xs={12} sm={6}>
+
+                                {/* FAQs */}
+                                <Grid item xs={12}>
                                     <TextField
                                         fullWidth
                                         label="FAQs"
-                                        value={productDetails?.faqs.map(faq => `Q: ${faq.question} A: ${faq.answer}`).join('\n') || ''}
+                                        value={
+                                            productDetails?.faqs
+                                                .map((faq) => `Q: ${faq.question} A: ${faq.answer}`)
+                                                .join('\n') || ''
+                                        }
                                         onChange={(e) => {
-                                            const faqs = e.target.value.split('\n').map(faq => {
+                                            const faqs = e.target.value.split('\n').map((faq) => {
                                                 const [question, answer] = faq.split(' A: ');
                                                 return { question, answer };
                                             });
@@ -347,27 +396,114 @@ function ViewDetailsApprovedProducts() {
                                         variant="outlined"
                                         disabled={!isEditing}
                                         multiline
-                                        rows={4}
+                                        minRows={5}
                                     />
                                 </Grid>
-                                <Grid item xs={12} sm={6}>
-                                    <Typography variant="h6">Product Images:</Typography>
-                                    <Grid container spacing={1}>
-                                        {productDetails?.productImages?.map((image, index) => (
-                                            <Grid item xs={4} key={index}>
-                                                <img src={image} alt={`Product ${index}`} style={{ maxHeight: '150px', borderRadius: '5px', width: '100%' }} />
-                                            </Grid>
-                                        ))}
+
+                                <Grid container spacing={3}>
+                                    {/* Upload Product Images */}
+                                    <Grid item xs={12} sm={6}>
+                                        <Button
+                                            variant="contained"
+                                            color="primary"
+                                            onClick={() => productImagesRef.current.click()}
+                                            disabled={!isEditing}
+                                            startIcon={<UploadIcon />}
+                                            fullWidth
+                                        >
+                                            Upload Product Images
+                                        </Button>
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            multiple
+                                            style={{ display: 'none' }}
+                                            ref={productImagesRef}
+                                            onChange={(e) => handleImageChange(e, 'productImages')} // This now converts to Base64
+                                        />
                                     </Grid>
-                                </Grid>
-                                <Grid item xs={12} sm={6}>
-                                    <Typography variant="h6">Banner Images:</Typography>
-                                    <Grid container spacing={1}>
-                                        {productDetails?.productBannerImages?.map((image, index) => (
-                                            <Grid item xs={4} key={index}>
-                                                <img src={image} alt={`Banner ${index}`} style={{ maxHeight: '150px', borderRadius: '5px', width: '100%' }} />
-                                            </Grid>
-                                        ))}
+
+                                    {/* Upload Banner Images */}
+                                    <Grid item xs={12} sm={6}>
+                                        <Button
+                                            variant="contained"
+                                            color="secondary"
+                                            onClick={() => bannerImagesRef.current.click()}
+                                            disabled={!isEditing}
+                                            startIcon={<UploadIcon />}
+                                            fullWidth
+                                        >
+                                            Upload Banner Images
+                                        </Button>
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            multiple
+                                            style={{ display: 'none' }}
+                                            ref={bannerImagesRef}
+                                            onChange={(e) => handleImageChange(e, 'bannerImages')} // This now converts to Base64
+                                        />
+                                    </Grid>
+
+
+
+
+                                    {/* Product Images */}
+                                    <Grid item xs={12}>
+                                        <Typography variant="h6" gutterBottom>
+                                            Product Images:
+                                        </Typography>
+                                        <Grid container spacing={2}>
+                                            {[...(productDetails?.productImages || []), ...newProductImages].map(
+                                                (image, index) => (
+                                                    <Grid item xs={6} sm={4} md={3} key={`prod-${index}`}>
+                                                        <Box
+                                                            component="img"
+                                                            src={image}
+                                                            alt={`Product ${index}`}
+                                                            sx={{
+                                                                width: '100%',
+                                                                height: 150,
+                                                                objectFit: 'cover',
+                                                                borderRadius: 2,
+                                                                boxShadow: 1,
+                                                                transition: 'transform 0.2s ease',
+                                                                '&:hover': { transform: 'scale(1.05)' },
+                                                            }}
+                                                        />
+                                                    </Grid>
+                                                )
+                                            )}
+                                        </Grid>
+                                    </Grid>
+
+                                    {/* Banner Images */}
+                                    <Grid item xs={12}>
+                                        <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
+                                            Banner Images:
+                                        </Typography>
+                                        <Grid container spacing={2}>
+                                            {[...(productDetails?.productBannerImages || []), ...newBannerImages].map(
+                                                (image, index) => (
+                                                    <Grid item xs={6} sm={4} md={3} key={`banner-${index}`}>
+                                                        <Box
+                                                            component="img"
+                                                            src={image}
+                                                            alt={`Banner ${index}`}
+                                                            sx={{
+                                                                width: '100%',
+                                                                height: 150,
+                                                                objectFit: 'cover',
+                                                                borderRadius: 2,
+                                                                boxShadow: 1,
+                                                                transition: 'transform 0.2s ease',
+                                                                '&:hover': { transform: 'scale(1.05)' },
+                                                            }}
+                                                        />
+                                                    </Grid>
+                                                )
+                                            )}
+                                        </Grid>
                                     </Grid>
                                 </Grid>
                             </Grid>
@@ -376,7 +512,7 @@ function ViewDetailsApprovedProducts() {
 
                     <Grid item xs={12}>
                         <Paper elevation={3} sx={{ padding: 3 }}>
-                            <InventorySidebar 
+                            <InventorySidebar
                                 onPriceSubmit={(priceData) => {
                                     setProductDetails(prev => ({
                                         ...prev,
