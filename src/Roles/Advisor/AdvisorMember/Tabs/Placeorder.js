@@ -19,6 +19,9 @@ import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 import ClearIcon from '@mui/icons-material/Clear';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+
 
 const PlaceOrder = ({ customerId, advisorId }) => {
   const [subtotal, setSubtotal] = useState(0);
@@ -32,12 +35,24 @@ const PlaceOrder = ({ customerId, advisorId }) => {
   const [modalOpen, setModalOpen] = useState(false);
   const [checkedProducts, setCheckedProducts] = useState({});
 
+  const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
+const [feedbackType, setFeedbackType] = useState(""); // "success" or "error"
+const [feedbackMessage, setFeedbackMessage] = useState("");
+
+const showFeedback = (type, message) => {
+  setFeedbackType(type);
+  setFeedbackMessage(message);
+  setFeedbackModalOpen(true);
+};
+
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/advisory-member/get-products`, {
           withCredentials: true,
         });
+        console.log(response.data);
+        
         if (Array.isArray(response.data.approvedProducts)) {
           setProductOptions(response.data.approvedProducts);
         } else {
@@ -114,9 +129,9 @@ const PlaceOrder = ({ customerId, advisorId }) => {
     }));
   };
 
- const placeOrder = async () => {
+const placeOrder = async () => {
   if (!customerId) {
-    toast.error("Customer ID is required.");
+    showFeedback("error", "Customer ID is required.");
     return;
   }
 
@@ -126,23 +141,19 @@ const PlaceOrder = ({ customerId, advisorId }) => {
   }));
 
   if (orders.some(order => order.quantity <= 0)) {
-    toast.error("Please select a product for all items.");
+    showFeedback("error", "Please select a product for all items.");
     return;
   }
 
-  // ✅ Check for stock availability
+  // ✅ Check for stockListedForSell availability
   const outOfStockProducts = orders.filter(order => {
   const product = productOptions.find(p => p._id === order.productId);
-  return product && (product.stock === 0 || !product.stock);
+  return product && (Number(product.stock?.stockListedForSell) <= 0);
 });
-if (outOfStockProducts.length > 0) {
-  toast.error("No stock at the moment for one or more selected products.");
-  return;
-}
 
 
   if (outOfStockProducts.length > 0) {
-    toast.error("No stock at the moment for one or more selected products.");
+    showFeedback("error", "No stock at the moment for one or more selected products.");
     return;
   }
 
@@ -163,15 +174,15 @@ if (outOfStockProducts.length > 0) {
     );
 
     if (response.data.message === "Orders processed") {
-      toast.success("Order placed successfully!");
       setCheckedProducts({});
       setSelectedCoupon("");
+      showFeedback("success", "Order placed successfully!");
     } else {
-      toast.error(response.data.message || "Failed to place order.");
+      showFeedback("error", response.data.message || "Failed to place order.");
     }
   } catch (error) {
     console.error("Order placement error:", error);
-    toast.error(error.response?.data?.message || "Failed to place order. Please try again.");
+    showFeedback("error", error.response?.data?.message || "Failed to place order. Please try again.");
   } finally {
     setSubmitting(false);
   }
@@ -345,6 +356,31 @@ if (outOfStockProducts.length > 0) {
             </Button>
           </Grid>
         </Grid>
+
+        {/* Feedback Modal */}
+<Modal open={feedbackModalOpen} onClose={() => setFeedbackModalOpen(false)}>
+  <Box sx={{
+    backgroundColor: "white",
+    borderRadius: 2,
+    padding: 4,
+    maxWidth: 400,
+    width: '90%',
+    margin: "auto",
+    mt: '10%',
+    textAlign: 'center'
+  }}>
+    {feedbackType === "success" ? (
+      <CheckCircleOutlineIcon sx={{ fontSize: 60, color: "green" }} />
+    ) : (
+      <ErrorOutlineIcon sx={{ fontSize: 60, color: "red" }} />
+    )}
+    <Typography variant="h6" sx={{ mt: 2 }}>{feedbackMessage}</Typography>
+    <Button variant="contained" sx={{ mt: 3 }} onClick={() => setFeedbackModalOpen(false)}>
+      Close
+    </Button>
+  </Box>
+</Modal>
+
 
           {/* Modal with bigger, multiline fields */}
         <Modal open={modalOpen} onClose={handleModalClose}>
