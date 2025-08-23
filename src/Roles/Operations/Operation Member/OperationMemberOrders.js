@@ -422,26 +422,11 @@ const [endDate, setEndDate] = useState("");
                 <TableCell style={tableCellStyle}>{order.pincode}</TableCell>
                 <TableCell style={tableCellStyle}>₹{order.totalAmount}</TableCell>
                 <TableCell style={tableCellStyle}>
-                    <Select
-                        value={order.status}
-                        onChange={(e) =>
-                            handleStatusChange(order.orderId, e.target.value)
-                        }
-                        sx={{
-                            color: '#fff',
-                            '.MuiOutlinedInput-notchedOutline': { borderColor: '#fff' },
-                            '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#FFA500' },
-                            '.MuiSvgIcon-root': { color: '#fff' },
-                            minWidth: '150px'
-                        }}
-                    >
-                        {statusOptions.map((status) => (
-                            <MenuItem key={status} value={status}>
-                                {status}
-                            </MenuItem>
-                        ))}
-                    </Select>
-                </TableCell>
+  <Typography sx={{ color: '#fff', minWidth: '150px' }}>
+    {order.status}
+  </Typography>
+</TableCell>
+
             </TableRow>
         ))}
     </TableBody>

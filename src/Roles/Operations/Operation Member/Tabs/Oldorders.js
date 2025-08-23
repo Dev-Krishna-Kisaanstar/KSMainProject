@@ -1,21 +1,50 @@
 import React, { useEffect, useState } from "react";
 import {
-    Container,
-    Typography,
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TableRow,
-    Paper,
-    CssBaseline
+  Container,
+  Typography,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  CssBaseline,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogActions,
+  Box,
+  Grid,
+  Select,
+  MenuItem,
+  OutlinedInput,
+  TextField
 } from "@mui/material";
-import { CheckCircle, CancelScheduleSend, DateRange, Person, AttachMoney, List } from "@mui/icons-material";
+import {
+  CheckCircle,
+  CancelScheduleSend,
+  DateRange,
+  Person,
+  AttachMoney,
+  List,
+  NearMe
+} from "@mui/icons-material";
 import axios from "axios";
+import Cookies from "js-cookie";   // ✅ Add this
 import { ToastContainer, toast } from "react-toastify";
 import { useParams } from "react-router-dom";
-import 'react-toastify/dist/ReactToastify.css';
+import "react-toastify/dist/ReactToastify.css";
+
+
+  const services = [
+    { service1: 'Attempt 1', service2: 'CNR' },
+    { service1: 'Attempt 2', service2: 'Call Picked But Disconnected by Cx' },
+    { service1: 'Attempt 3', service2: 'Call Back' },
+    { service1: 'Attempt 4', service2: 'Order Cancel' },
+    { service1: 'Attempt 5', service2: 'Order Confirm' },
+    { service1: 'Attempt 6', service2: '' },
+  ];
 
 const statusOptions = [
     'Order Placed',
@@ -57,6 +86,69 @@ const Oldorders = () => {
     const [page, setPage] = useState(1);
     const itemsPerPage = 5; // Load 5 orders at a time
     const [hasMore, setHasMore] = useState(false);
+    const [openServiceDialog, setOpenServiceDialog] = useState(false);
+const [selectedServices, setSelectedServices] = useState({ service1: "", service2: "", service3: "" });
+const [message, setMessage] = useState("");
+const [username, setUsername] = useState('');
+
+
+    useEffect(() => {
+    if (!customerId) return;  // guard clause
+    fetchAllOrders();
+}, [customerId]);
+
+
+    // Scroll event for lazy loading
+  useEffect(() => {
+    const handleScroll = () => {
+        if (
+            window.innerHeight + document.documentElement.scrollTop >=
+            document.documentElement.offsetHeight - 50 &&
+            hasMore && !loading
+        ) {
+            loadMoreOrders();
+        }
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+}, [hasMore, loading, allOrders, page]);
+
+
+    if (loading && allOrders.length === 0) {
+        return (
+            <Container>
+                <Typography color="text.secondary" fontWeight="bold" sx={{ color: 'white' }}>Loading...</Typography>
+            </Container>
+        );
+    }
+
+    if (error) {
+        return (
+            <Container>
+                <Typography color="error" fontWeight="bold" sx={{ color: 'white' }}>{error}</Typography>
+            </Container>
+        );
+    }
+
+   useEffect(() => {
+    const fetchUsername = async () => {
+        try {
+            const response = await axios.get(
+                `${process.env.REACT_APP_API_URL}/api/operational-member/dashbord`,
+                { withCredentials: true }
+            );
+            const { advisoryMember } = response.data || {};
+            if (advisoryMember && advisoryMember.fullName) {
+                setUsername(advisoryMember.fullName);
+            }
+        } catch (error) {
+            console.error("Failed to fetch username:", error);
+            setError("Failed to fetch data.");
+        }
+    };
+    fetchUsername();
+}, []);
+
 
     // Fetch all orders once
     const fetchAllOrders = async () => {
@@ -75,7 +167,7 @@ const Oldorders = () => {
         } catch (err) {
             const message = err.response?.data?.message || "Failed to fetch orders";
             setError(message);
-            toast.error(message);
+             alert(message);
         } finally {
             setLoading(false);
         }
@@ -93,41 +185,41 @@ const Oldorders = () => {
         }
     };
 
-    useEffect(() => {
-        if (customerId) {
-            fetchAllOrders();
-        }
-    }, [customerId]);
 
-    // Scroll event for lazy loading
-    useEffect(() => {
-        const handleScroll = () => {
-            if (
-                window.innerHeight + document.documentElement.scrollTop >= document.documentElement.offsetHeight - 50 &&
-                hasMore && !loading
-            ) {
-                loadMoreOrders();
-            }
-        };
-        window.addEventListener("scroll", handleScroll);
-        return () => window.removeEventListener("scroll", handleScroll);
-    }, [hasMore, loading, allOrders, page]);
 
-    if (loading && allOrders.length === 0) {
-        return (
-            <Container>
-                <Typography color="text.secondary" fontWeight="bold" sx={{ color: 'white' }}>Loading...</Typography>
-            </Container>
-        );
+
+    const handleSubmitTagging = async () => {
+  setLoading(true);
+  setMessage("");
+  try {
+    const requestBody = {
+      service1: selectedServices.service1,
+      service2: selectedServices.service2,
+      remarks: selectedServices.service3,
+      OperationName: username,
+      taggedDate: new Date().toISOString(),
+    };
+    console.log("Tagging request payload:", requestBody);
+
+    const response = await axios.post(
+      `${process.env.REACT_APP_API_URL}/api/advisory-member/tagging/${customerId}`,
+      requestBody,
+      { withCredentials: true }
+    );
+
+    if (response.status === 200 || response.status === 201) {
+      Cookies.remove("frontendadvisorycustomertoken");
+      setMessage("Attempt submitted successfully ✅");
+    } else {
+      setMessage("Failed to submit tagging ❌");
     }
-
-    if (error) {
-        return (
-            <Container>
-                <Typography color="error" fontWeight="bold" sx={{ color: 'white' }}>{error}</Typography>
-            </Container>
-        );
-    }
+  } catch (error) {
+    console.error("Error submitting tagging:", error);
+    setMessage("Failed to submit tagging ❌");
+  } finally {
+    setLoading(false);
+  }
+};
 
     const handleStatusChange = async (orderId, newStatus) => {
         try {
@@ -150,12 +242,10 @@ const Oldorders = () => {
                         order.orderId === orderId ? { ...order, orderStatus: newStatus } : order
                     )
                 );
-                toast.success('Status updated successfully!');
-            }
+alert('Status updated successfully!');            }
         } catch (error) {
             console.error("Error updating order status: ", error);
-            toast.error('Failed to update status!');
-        }
+alert('Failed to update status!');        }
     };
 
     return (
@@ -263,12 +353,22 @@ const Oldorders = () => {
                                                 </Typography>
                                             )}
                                         </TableCell>
+                                        <TableCell>
+                      <Button
+                        variant="contained"
+                        size="small"
+                        onClick={() => setOpenServiceDialog(true)}
+                      >
+                        Action
+                      </Button>
+                    </TableCell>
                                     </TableRow>
                                 );
                             })}
                         </TableBody>
                     </Table>
                 </TableContainer>
+
             ) : (
                 <Typography
                     variant="h6"
@@ -279,6 +379,141 @@ const Oldorders = () => {
                     No orders found for this user.
                 </Typography>
             )}
+              {/* Services Selection Dialog */}
+                            <Dialog
+                              open={openServiceDialog}
+                              onClose={() => setOpenServiceDialog(false)}
+                              fullWidth
+                              maxWidth="md"
+                              PaperProps={{
+                                style: {
+                                  width: '80%',
+                                  height: '50%', // Increased height for larger size
+                                  maxWidth: 'none',
+                                  borderRadius: 20,
+                                  boxShadow: '0 8px 16px rgba(0,0,0,0.3)',
+                                  backgroundColor: '#1e1e2f',
+                                }
+                              }}
+                            >
+                              <DialogTitle
+                                sx={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  backgroundColor: '#4CAF50',
+                                  color: 'white',
+                                  borderTopLeftRadius: 20,
+                                  borderTopRightRadius: 20,
+                                  padding: 2,
+                                }}
+                              >
+                                <NearMe sx={{ fontSize: 30, marginRight: 10 }} />
+                                <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
+                                  Operation Member Attempts
+                                </Typography>
+                              </DialogTitle>
+                              <Box sx={{ padding: 4, height: 'calc(100% - 80px)', overflowY: 'auto' }}>
+                                <Grid container spacing={3}>
+                                  {/* Service 1 */}
+                                  <Grid item xs={12} md={4}>
+                                    <Typography variant="h6" sx={{ mb: 1, color: 'white' }}> Select Attempt</Typography>
+                                    <Select
+                                      fullWidth
+                                      value={selectedServices.service1}
+                                      onChange={(e) => setSelectedServices(prev => ({ ...prev, service1: e.target.value }))}
+                                      displayEmpty
+                                      sx={{
+                                        '& .MuiOutlinedInput-root': {
+                                          fontSize: 18,
+                                          borderRadius: 10,
+                                        },
+                                        '& .MuiOutlinedInput-notchedOutline': {
+                                          borderColor: 'white',
+                                        },
+                                        backgroundColor: 'white',
+                                        color: 'black',
+                                      }}
+                                    >
+                                      <MenuItem value="">
+                                        <em style={{ fontSize: 16, color: '#999' }}>Select Attempt</em>
+                                      </MenuItem>
+                                      {services.map((service, index) => service.service1 && (
+                                        <MenuItem key={index} value={service.service1} style={{ fontSize: 16 }}>
+                                          {service.service1}
+                                        </MenuItem>
+                                      ))}
+                                    </Select>
+                                  </Grid>
+                                  {/* Service 2 */}
+                                  <Grid item xs={12} md={4}>
+                                    <Typography variant="h6" sx={{ mb: 1, color: 'white' }}> Select Reason</Typography>
+                                    <Select
+                                      fullWidth
+                                      value={selectedServices.service2}
+                                      onChange={(e) => setSelectedServices(prev => ({ ...prev, service2: e.target.value }))}
+                                      displayEmpty
+                                      input={<OutlinedInput />}
+                                      sx={{
+                                        '& .MuiOutlinedInput-root': {
+                                          fontSize: 18,
+                                          borderRadius: 10,
+                                        },
+                                        '& .MuiOutlinedInput-notchedOutline': {
+                                          borderColor: 'white',
+                                        },
+                                        backgroundColor: 'white',
+                                        color: 'black',
+                                      }}
+                                    >
+                                      <MenuItem value="">
+                                        <em style={{ fontSize: 16, color: '#999' }}>Select Reason</em>
+                                      </MenuItem>
+                                      {services.map((service, index) => service.service2 && (
+                                        <MenuItem key={index} value={service.service2} style={{ fontSize: 16 }}>
+                                          {service.service2}
+                                        </MenuItem>
+                                      ))}
+                                    </Select>
+                                  </Grid>
+                                  
+                                  {/* Service 3 Description - Make it big and prominent */}
+                                  <Grid item xs={12} md={12}> {/* Full width for better size */}
+                                    <Typography variant="h6" sx={{ mb: 2, color: 'white' }}>Description</Typography>
+                                    <TextField
+                                      fullWidth
+                                      placeholder="Describe your Reason here"
+                                      variant="outlined"
+                                      value={selectedServices.service3}
+                                      onChange={(e) => setSelectedServices(prev => ({ ...prev, service3: e.target.value }))}
+                                      multiline
+                                      rows={6} // Make it larger vertically
+                                      sx={{
+                                        input: { fontSize: 16, color: 'white' },
+                                        backgroundColor: 'white',
+                                        borderRadius: 2,
+                                        '& .MuiOutlinedInput-root': {
+                                          height: '100%', // Ensures full height if needed
+                                        },
+                                      }}
+                                    />
+                                  </Grid>
+                                </Grid>
+                              </Box>
+                              <DialogActions sx={{ padding: 2, backgroundColor: '#1e1e2f', borderBottomLeftRadius: 20, borderBottomRightRadius: 20 }}>
+                                <Button onClick={() => setOpenServiceDialog(false)} color="error" variant="contained" sx={{ fontSize: 16, paddingX: 2, borderRadius: 2 }}>
+                                  Cancel
+                                </Button>
+                                <Button onClick={handleSubmitTagging} color="primary" variant="contained" sx={{ fontSize: 16, paddingX: 2, borderRadius: 2 }}>
+                                  Submit Attempts
+                                </Button>
+                                {message && (
+  <p style={{ color: message.includes("successfully") ? "green" : "red" }}>
+    {message}
+  </p>
+)}
+
+                              </DialogActions>
+                            </Dialog>
         </Container>
     );
 };

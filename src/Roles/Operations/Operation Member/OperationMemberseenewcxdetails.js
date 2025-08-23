@@ -26,7 +26,7 @@ import postOfficeData from '../../../Assets/Pincodes/pincodeData.json';
 import Cookies from 'js-cookie';
 import TaggingAuth from './Auth/TaggingAuth';
 import Tagging from './Tabs/Tagging';
-import Oldorders from './Tabs/Oldorders';
+import OrderConfirmation from './Tabs/Oldorders';
 // import PlaceOrder from './Tabs/Placeorder';
 import Cxnearbyorders from './Tabs/Cxnearbyorders'
 import { styled } from '@mui/material/styles';
@@ -107,7 +107,7 @@ function OperationMemberseenewcxdetails() {
   ];
 
   const cropOptions = [
-    'Rice', 'Paddy', 'Cotton', 'Gram', 'Black Gram', 'Green Gram', 'Tur',
+    'Rice', 'Paddy', 'Cotton','Onion', 'Gram', 'Black Gram', 'Green Gram', 'Tur',
     'Pigeonpea', 'Pea', 'Pomegranate', 'Papaya', 'Banana', 'Grapes',
     'Citrus', 'Custard Apple', 'Strawberry', 'Watermelon', 'Muskmelon',
     'Mango', 'Apple', 'Oranges', 'Sugarcane', 'Tomato', 'Brinjal',
@@ -121,12 +121,12 @@ function OperationMemberseenewcxdetails() {
   ];
 
   const services = [
-    { service1: 'Order Place', service2: 'Order Placed' },
-    { service1: 'Agronomy Call', service2: 'Agronomy Related Query' },
-    { service1: 'Inquiry Call', service2: 'Product Inquiry Call' },
-    { service1: 'Order Related Inquiry', service2: 'Order tracking related call' },
-    { service1: 'Profile Verification', service2: 'Profile Created' },
-    { service1: 'Random Call', service2: '' },
+    { service1: 'Attempt 1', service2: 'CNR' },
+    { service1: 'Attempt 2', service2: 'Call Picked But Disconnected by Cx' },
+    { service1: 'Attempt 3', service2: 'Call Back' },
+    { service1: 'Attempt 4', service2: 'Order Cancel' },
+    { service1: 'Attempt 5', service2: 'Order Confirm' },
+    { service1: 'Attempt 6', service2: '' },
   ];
 
   // Fetch customer and farming details when mobileNumber changes
@@ -751,16 +751,16 @@ function OperationMemberseenewcxdetails() {
       <Comment style={{ color: activeComponent === 'remark' ? 'white' : 'green', marginRight: '8px' }} /> Tagging
     </ToggleButton>
     <ToggleButton
-      value="oldOrders"
+      value="OrderConfirmation"
       aria-label="old orders"
       sx={{
         height: 50,
         borderRadius: '20px',
         border: '2px solid green',
-        backgroundColor: activeComponent === 'oldOrders' ? 'green' : '#0f1535',
-        color: activeComponent === 'oldOrders' ? 'white' : 'white',
+        backgroundColor: activeComponent === 'OrderConfirmation' ? 'green' : '#0f1535',
+        color: activeComponent === 'OrderConfirmation' ? 'white' : 'white',
         '&:hover': {
-          backgroundColor: activeComponent !== 'oldOrders' ? 'rgba(0, 255, 0, 0.2)' : 'green',
+          backgroundColor: activeComponent !== 'OrderConfirmation' ? 'rgba(0, 255, 0, 0.2)' : 'green',
           color: 'black',  // Change text color to black on hover for inactive tabs
           borderColor: 'green',
         },
@@ -769,9 +769,9 @@ function OperationMemberseenewcxdetails() {
         padding: '0 16px',
       }}
     >
-      <History style={{ color: activeComponent === 'oldOrders' ? 'white' : 'green', marginRight: '8px' }} /> Old Orders
+      <History style={{ color: activeComponent === 'OrderConfirmation' ? 'white' : 'green', marginRight: '8px' }} /> Order Confirmation
     </ToggleButton>
-    <ToggleButton
+    {/* <ToggleButton
       value="cxNearbyOrders"
       aria-label="cx nearby orders"
       sx={{
@@ -791,7 +791,7 @@ function OperationMemberseenewcxdetails() {
       }}
     >
       <LocationOn style={{ color: activeComponent === 'cxNearbyOrders' ? 'white' : 'green', marginRight: '8px' }} /> Cx Nearby Orders
-    </ToggleButton>
+    </ToggleButton> */}
     {/* <ToggleButton
       value="placeOrder"
       aria-label="place order"
@@ -859,7 +859,7 @@ function OperationMemberseenewcxdetails() {
   <AddLocation style={{ color: activeComponent === 'addAddress' ? 'white' : 'green', marginRight: '8px' }} /> Add Address
 </ToggleButton>
 
-<ToggleButton
+{/* <ToggleButton
   value="addFarmingDetails"
   aria-label="farming details"
   onClick={() => setActiveComponent('addFarmingDetails')} // Add onClick to set active component
@@ -880,7 +880,7 @@ function OperationMemberseenewcxdetails() {
   }}
 >
   <Task style={{ color: activeComponent === 'addFarmingDetails' ? 'white' : 'green', marginRight: '8px' }} /> Farming Details
-</ToggleButton>
+</ToggleButton> */}
   </ToggleButtonGroup>
 </Box>
 
@@ -895,7 +895,7 @@ function OperationMemberseenewcxdetails() {
       <div>
         {activeComponent === 'remark' && <Tagging />}
         {activeComponent === 'ProductListAdvisory' && <ProductListAdvisory />}
-        {activeComponent === 'oldOrders' && <Oldorders />}
+        {activeComponent === 'OrderConfirmation' && <OrderConfirmation />}
         {activeComponent === 'cxNearbyOrders' && <Cxnearbyorders customerId={customerId} />}
         {/* {activeComponent === 'placeOrder' && <PlaceOrder customerId={customerId} />} */}
       </div>
@@ -1311,14 +1311,14 @@ function OperationMemberseenewcxdetails() {
   >
     <NearMe sx={{ fontSize: 30, marginRight: 10 }} />
     <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
-      Operation Member Tagging
+      Operation Member Attempts
     </Typography>
   </DialogTitle>
   <Box sx={{ padding: 4, height: 'calc(100% - 80px)', overflowY: 'auto' }}>
     <Grid container spacing={3}>
       {/* Service 1 */}
       <Grid item xs={12} md={4}>
-        <Typography variant="h6" sx={{ mb: 1, color: 'white' }}>Service 1</Typography>
+        <Typography variant="h6" sx={{ mb: 1, color: 'white' }}> Select Attempt</Typography>
         <Select
           fullWidth
           value={selectedServices.service1}
@@ -1337,7 +1337,7 @@ function OperationMemberseenewcxdetails() {
           }}
         >
           <MenuItem value="">
-            <em style={{ fontSize: 16, color: '#999' }}>Select Service 1</em>
+            <em style={{ fontSize: 16, color: '#999' }}>Select Attempt</em>
           </MenuItem>
           {services.map((service, index) => service.service1 && (
             <MenuItem key={index} value={service.service1} style={{ fontSize: 16 }}>
@@ -1348,7 +1348,7 @@ function OperationMemberseenewcxdetails() {
       </Grid>
       {/* Service 2 */}
       <Grid item xs={12} md={4}>
-        <Typography variant="h6" sx={{ mb: 1, color: 'white' }}>Service 2</Typography>
+        <Typography variant="h6" sx={{ mb: 1, color: 'white' }}> Select Reason</Typography>
         <Select
           fullWidth
           value={selectedServices.service2}
@@ -1368,7 +1368,7 @@ function OperationMemberseenewcxdetails() {
           }}
         >
           <MenuItem value="">
-            <em style={{ fontSize: 16, color: '#999' }}>Select Service 2</em>
+            <em style={{ fontSize: 16, color: '#999' }}>Select Reason</em>
           </MenuItem>
           {services.map((service, index) => service.service2 && (
             <MenuItem key={index} value={service.service2} style={{ fontSize: 16 }}>
@@ -1380,10 +1380,10 @@ function OperationMemberseenewcxdetails() {
       
       {/* Service 3 Description - Make it big and prominent */}
       <Grid item xs={12} md={12}> {/* Full width for better size */}
-        <Typography variant="h6" sx={{ mb: 2, color: 'white' }}>Service 3 Description</Typography>
+        <Typography variant="h6" sx={{ mb: 2, color: 'white' }}>Description</Typography>
         <TextField
           fullWidth
-          placeholder="Describe your service here"
+          placeholder="Describe your Reason here"
           variant="outlined"
           value={selectedServices.service3}
           onChange={(e) => setSelectedServices(prev => ({ ...prev, service3: e.target.value }))}
@@ -1406,7 +1406,7 @@ function OperationMemberseenewcxdetails() {
       Cancel
     </Button>
     <Button onClick={handleSubmitTagging} color="primary" variant="contained" sx={{ fontSize: 16, paddingX: 2, borderRadius: 2 }}>
-      Submit Services
+      Submit Attempts
     </Button>
   </DialogActions>
 </Dialog>
